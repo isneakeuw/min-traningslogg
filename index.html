@@ -399,6 +399,7 @@
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- FIX FÖR ATT KÖRA JAVASCRIPT SOM EN MODUL -->
   <script type="module">
     // Importera Firebase-moduler
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -737,6 +738,7 @@
                   await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`, docId));
                   showStatusMessage("Inmatning borttagen!", 'success');
                 } catch (e) {
+233513
                   console.error("Fel vid borttagning av inmatning:", e);
                   showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
                 }
