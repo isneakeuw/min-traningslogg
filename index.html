@@ -415,19 +415,43 @@
       // Sätt Firebase-loggnivån till Debug för att se detaljerade felmeddelanden i konsolen.
       setLogLevel('debug');
 
-      const firebaseConfig = {
-        apiKey: "AIzaSyCKjXS1Txfcfd-nDr0jI0qalrjXsz7HgM",
+      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
         authDomain: "traningslogg-a271a.firebaseapp.com",
         projectId: "traningslogg-a271a",
-        storageBucket: "traningslogg-a271a.appspot.com",
+        storageBucket: "traningslogg-a271a.firebasestorage.app",
         messagingSenderId: "949604620134",
         appId: "1:949604620134:web:424835eafca2dc0a66daa7",
         measurementId: "G-Q9MRXSQ6JB"
       };
-      
+
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
       const auth = getAuth(app);
+      let workoutData = [];
+
+      // Hämtar referenser till alla DOM-element
+      const exerciseSelect = document.getElementById('exercise-select');
+      const weekInput = document.getElementById('week-input');
+      const pastWeeksSelect = document.getElementById('past-weeks-select');
+      const setsInput = document.getElementById('sets-input');
+      const repsInput = document.getElementById('reps-input');
+      const weightInput = document.getElementById('weight-input');
+      const saveButton = document.getElementById('save-button');
+      const newExerciseInput = document.getElementById('new-exercise-input');
+      const addExerciseButton = document.getElementById('add-exercise-button');
+      const exerciseListDiv = document.getElementById('exercise-list');
+      const tableBody = document.getElementById('table-body');
+      const tableHead = document.getElementById('table-head');
+      const statusMessageDiv = document.getElementById('status-message');
+      const tableContainer = document.getElementById('table-container');
+      const dataListEmptyMessage = document.getElementById('data-list-empty-message');
+      const weightChart = document.getElementById('weight-chart');
+      const chartEmptyMessage = document.getElementById('chart-empty-message');
+      const manageExercisesDetails = document.getElementById('manage-exercises-details');
+      const currentUserIdDisplay = document.getElementById('current-user-id-display');
+      const userIdInput = document.getElementById('user-id-input');
+      const loadUserIdButton = document.getElementById('load-user-id-button');
 
       // Loggar in anonymt och sätter upp all funktionalitet efter inloggning
       onAuthStateChanged(auth, async (user) => {
@@ -436,32 +460,17 @@
         } else {
           const userId = user.uid;
 
-          // Hämtar referenser till alla DOM-element
-          const exerciseSelect = document.getElementById('exercise-select');
-          const weekInput = document.getElementById('week-input');
-          const pastWeeksSelect = document.getElementById('past-weeks-select');
-          const setsInput = document.getElementById('sets-input');
-          const repsInput = document.getElementById('reps-input');
-          const weightInput = document.getElementById('weight-input');
-          const saveButton = document.getElementById('save-button');
-          const newExerciseInput = document.getElementById('new-exercise-input');
-          const addExerciseButton = document.getElementById('add-exercise-button');
-          const exerciseListDiv = document.getElementById('exercise-list');
-          const tableBody = document.getElementById('table-body');
-          const tableHead = document.getElementById('table-head');
-          const statusMessageDiv = document.getElementById('status-message');
-          const tableContainer = document.getElementById('table-container');
-          const dataListEmptyMessage = document.getElementById('data-list-empty-message');
-          const weightChart = document.getElementById('weight-chart');
-          const chartEmptyMessage = document.getElementById('chart-empty-message');
-          const manageExercisesDetails = document.getElementById('manage-exercises-details');
-          const currentUserIdDisplay = document.getElementById('current-user-id-display');
-          const userIdInput = document.getElementById('user-id-input');
-          const loadUserIdButton = document.getElementById('load-user-id-button');
-          
+          // Här lägger vi till logiken för att ladda data från en annan användare
+          loadUserIdButton.addEventListener('click', () => {
+            const newUserId = userIdInput.value.trim();
+            if (newUserId) {
+              currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
+              window.location.reload();
+            }
+          });
+
           // Globala variabler för att lagra diagraminstans och data
           let myChart = null;
-          let workoutData = [];
 
           // Default-övningar
           const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
@@ -790,36 +799,24 @@
                 closeManageExercises();
               }
             });
-
-            loadUserIdButton.addEventListener('click', async () => {
-              const newUserId = userIdInput.value.trim();
-              if (newUserId) {
-                currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
-                startListeners(db, newUserId, config);
-              }
-            });
             
             // Initiala anrop
             weekInput.value = getWeekNumber(new Date());
 
-            // Funktion för att sätta igång Firebase-lyssnare
-            const startListeners = (db, currentUserId, config) => {
-              // Lyssna på realtidsuppdateringar från databasen för övningar och träningsdata
-              onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`), snapshot => {
-                const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderExercises(exercises);
-              });
-
-              onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`), snapshot => {
-                workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAllData(workoutData);
-              });
-            };
-
-            startListeners(db, userId, firebaseConfig);
           }
-        });
-      };
+          // Nu läggs alla onSnapshot-lyssnare till direkt här.
+          onSnapshot(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`), snapshot => {
+            const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderExercises(exercises);
+          });
+
+          onSnapshot(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/workouts`), snapshot => {
+            workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderAllData(workoutData);
+          });
+        }
+      });
+    };
 
     window.onload = setupApp;
   </script>
