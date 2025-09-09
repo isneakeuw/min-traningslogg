@@ -662,19 +662,9 @@
           return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         };
 
-        const renderExercises = (exercises, isInitialLoad) => {
+        const renderExercises = (exercises) => {
           exerciseSelect.innerHTML = '';
           exerciseListDiv.innerHTML = '';
-          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
-          if (isInitialLoad && exercises.length === 0) {
-            defaultExercises.forEach(async name => {
-              try {
-                await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name });
-              } catch (e) {
-                console.error("Fel vid tillägg av standardövning:", e);
-              }
-            });
-          }
           exercises.sort((a, b) => a.name.localeCompare(b.name));
           exercises.forEach(ex => {
             const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
@@ -965,12 +955,13 @@
         // Öppna hantera övningar-detaljer när användaren klickar på den
         manageExercisesDetails.addEventListener('toggle', () => {
             if (manageExercisesDetails.open) {
+              // Uppdaterar listan baserat på den senaste data från Firebase
               const exercises = Array.from(exerciseSelect.options).map(opt => ({name: opt.value}));
-              renderExercises(exercises, false); // Skickar false för att inte lägga till standardövningar igen
+              renderExercises(exercises);
             }
         });
 
-        const initializeAppLogic = (db, userId, firebaseConfig) => {
+        const initializeAppLogic = async (db, userId, firebaseConfig) => {
           loginContainer.classList.add('hidden');
           mainContent.classList.remove('hidden');
           logoutButton.classList.remove('hidden');
@@ -981,10 +972,19 @@
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
 
+          // Kollar om standardövningar måste läggas till
+          const exercisesRef = collection(db, `artifacts/${appId}/users/${userId}/exercises`);
+          const existingExercises = await getDocs(exercisesRef);
+          if (existingExercises.empty) {
+            const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
+            for (const name of defaultExercises) {
+              await addDoc(exercisesRef, { name });
+            }
+          }
+          
           unsubscribeExercises = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/exercises`), snapshot => {
             const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            // Skickar true endast vid den första laddningen
-            renderExercises(exercises, snapshot.docChanges().length === snapshot.docs.length);
+            renderExercises(exercises);
           });
 
           unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/workouts`), snapshot => {
