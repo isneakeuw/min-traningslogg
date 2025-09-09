@@ -167,6 +167,7 @@
       color: white;
       cursor: pointer;
       border: none;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
 
     .button-primary {
@@ -179,10 +180,12 @@
     
     .button-gemini:hover {
         background-color: var(--neon-lila-hover);
+        box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     }
 
     .button-primary:hover {
       background-color: var(--accent-hover-color);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     }
 
     .status-message {
@@ -360,12 +363,13 @@
       align-items: center;
       justify-content: center;
       gap: .5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     }
     
     .auth-button:hover {
       background-color: var(--button-hover-color);
       transform: scale(1.03);
-      box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+      box-shadow: 0 8px 12px rgba(0, 0, 0, 0.2);
     }
 
     #login-container {
@@ -568,15 +572,15 @@
           <select id="exercise-select" class="input-field"></select>
           <div class="input-grid">
             <div class="input-item">
-              <label for="week-input">Vecka</label>
-              <input type="number" inputmode="numeric" id="week-input" class="input-field" min="1" max="52" maxlength="4">
+              <label for="date-input">Datum</label>
+              <input type="date" id="date-input" class="input-field" required>
             </div>
             <div class="input-item">
-              <label for="sets-input">Sets (valfritt)</label>
+              <label for="sets-input">Sets</label>
               <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1" maxlength="4">
             </div>
             <div class="input-item">
-              <label for="reps-input">Reps (valfritt)</label>
+              <label for="reps-input">Reps</label>
               <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1" maxlength="4">
             </div>
             <div class="input-item">
@@ -602,10 +606,6 @@
       </details>
       <div id="history-card" class="card glass-effect">
         <h3>Träningshistorik</h3>
-        <div style="margin-bottom:1rem;">
-          <label for="past-weeks-select" style="color:#9ca3af;font-size:.875rem;font-weight:600;">Välj vecka att visa:</label>
-          <select id="past-weeks-select" class="input-field" style="margin-top:.5rem;"></select>
-        </div>
         <div id="table-container" style="overflow-x:auto;">
           <table class="styled-table">
             <thead id="table-head"></thead>
@@ -688,8 +688,7 @@
         const closeModalButton = document.getElementById('close-modal-button');
 
         const exerciseSelect = document.getElementById('exercise-select');
-        const weekInput = document.getElementById('week-input');
-        const pastWeeksSelect = document.getElementById('past-weeks-select');
+        const dateInput = document.getElementById('date-input');
         const setsInput = document.getElementById('sets-input');
         const repsInput = document.getElementById('reps-input');
         const weightInput = document.getElementById('weight-input');
@@ -711,21 +710,13 @@
         let unsubscribeExercises = null;
         let unsubscribeWorkouts = null;
 
-        const getWeekNumber = date => {
-          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          const dayNum = d.getUTCDay() || 7;
-          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-          return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        };
-
         const renderExercises = (exercises) => {
           exerciseSelect.innerHTML = '';
           exerciseListDiv.innerHTML = '';
           exercises.sort((a, b) => a.name.localeCompare(b.name));
           exercises.forEach(ex => {
             const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
-            exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
+            exerciseSelect.innerHTML += `<option data-id="${ex.id}" value="${ex.name}">${displayedName}</option>`;
             exerciseListDiv.innerHTML += `<div class="exercise-tag" id="ex-${ex.id}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
           });
         };
@@ -736,40 +727,32 @@
         };
 
         const renderWorkoutData = data => {
-          const uniqueWeeks = [...new Set(data.map(item => item.week))].sort((a, b) => b - a);
-          populateWeekDropdown(uniqueWeeks);
-          const selectedWeek = pastWeeksSelect.value;
-          const selectedWeekInt = parseInt(selectedWeek);
-          if (uniqueWeeks.includes(selectedWeekInt)) {
-            renderTable(data, selectedWeek);
-          } else {
-            if (uniqueWeeks.length > 0) {
-              const latestWeek = uniqueWeeks[0];
-              pastWeeksSelect.value = latestWeek;
-              renderTable(data, latestWeek);
-            } else {
-              renderTable(data, null);
-            }
-          }
+          renderTable(data);
         };
 
         const renderChart = data => {
           chartEmptyMessage.classList.toggle('hidden', data.length > 0);
           if (myChart) myChart.destroy();
           if (data.length === 0) return;
-          const grouped = data.reduce((acc, entry) => {
-            (acc[entry.week] = acc[entry.week] || {})[entry.exercise] = (acc[entry.week][entry.exercise] || []).concat(entry);
+
+          const sortedData = data.slice().sort((a, b) => a.timestamp - b.timestamp);
+
+          const grouped = sortedData.reduce((acc, entry) => {
+            const dateStr = new Date(entry.timestamp).toLocaleDateString('sv-SE');
+            (acc[entry.exercise] = acc[entry.exercise] || {})[dateStr] = entry;
             return acc;
           }, {});
-          const weeks = Object.keys(grouped).sort((a, b) => a - b);
+
+          const dates = [...new Set(sortedData.map(item => new Date(item.timestamp).toLocaleDateString('sv-SE')))].sort((a, b) => new Date(a) - new Date(b));
           const exercises = [...new Set(data.map(item => item.exercise))].sort();
+
           const datasets = exercises.map(ex => {
             const displayedName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
             return {
               label: displayedName,
-              data: weeks.map(w => {
-                const latestEntry = grouped[w][ex] ? grouped[w][ex].reduce((a, b) => (a.timestamp > b.timestamp) ? a : b) : null;
-                return latestEntry ? latestEntry.weight : null;
+              data: dates.map(d => {
+                const entry = grouped[ex] ? grouped[ex][d] : null;
+                return entry ? entry.weight : null;
               }),
               borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
               tension: .1,
@@ -777,10 +760,11 @@
               spanGaps: true
             };
           });
+
           myChart = new Chart(weightChart, {
             type: 'line',
             data: {
-              labels: weeks.map(w => `Vecka ${w}`),
+              labels: dates,
               datasets
             },
             options: {
@@ -803,7 +787,7 @@
                   },
                   title: {
                     display: true,
-                    text: 'Vecka',
+                    text: 'Datum',
                     color: '#e0e0e0'
                   }
                 },
@@ -825,33 +809,20 @@
           });
         };
 
-        const populateWeekDropdown = weeks => {
-          const currentVal = pastWeeksSelect.value;
-          pastWeeksSelect.innerHTML = '';
-          weeks.forEach(week => pastWeeksSelect.innerHTML += `<option value="${week}">Vecka ${week}</option>`);
-          if (weeks.length > 0) {
-            if (weeks.includes(parseInt(currentVal))) {
-              pastWeeksSelect.value = currentVal;
-            } else {
-              pastWeeksSelect.value = weeks[0];
-            }
-          } else {
-            pastWeeksSelect.innerHTML = '<option value="">Inga veckor</option>';
-          }
-        };
-
-        const renderTable = (data, selectedWeek) => {
-          tableHead.innerHTML = '<tr><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
+        const renderTable = data => {
+          tableHead.innerHTML = '<tr><th>Datum</th><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
           tableBody.innerHTML = '';
-          const filtered = selectedWeek ? data.filter(item => item.week === parseInt(selectedWeek)) : [];
-          dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
-          if (filtered.length === 0) {
+          const sortedData = data.slice().sort((a, b) => b.timestamp - a.timestamp);
+          dataListEmptyMessage.style.display = sortedData.length > 0 ? 'none' : 'block';
+          if (sortedData.length === 0) {
             tableContainer.style.display = 'none';
           } else {
             tableContainer.style.display = 'block';
-            filtered.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+            sortedData.forEach(item => {
+              const dateStr = new Date(item.timestamp).toLocaleDateString('sv-SE');
               const row = document.createElement('tr');
               row.innerHTML = `
+                <td>${dateStr}</td>
                 <td>${item.exercise}</td>
                 <td>${item.sets || '-'}</td>
                 <td>${item.reps || '-'}</td>
@@ -876,9 +847,6 @@
         };
         
         const validateInput = () => {
-            const week = parseInt(weekInput.value);
-            const sets = setsInput.value ? parseInt(setsInput.value) : null;
-            const reps = repsInput.value ? parseInt(repsInput.value) : null;
             const weight = parseFloat(weightInput.value);
 
             if (!exerciseSelect.value) {
@@ -886,40 +854,45 @@
                 return false;
             }
 
-            if (isNaN(week) || week < 1 || week > 52 || weekInput.value.length > 4) {
-                showMessageModal('Inmatningsfel', 'Veckonumret måste vara mellan 1 och 52 och ha max 4 siffror.');
+            if (!dateInput.value) {
+                showMessageModal('Inmatningsfel', 'Vänligen välj ett datum.');
                 return false;
             }
 
-            if (sets && (isNaN(sets) || setsInput.value.length > 4)) {
-                showMessageModal('Inmatningsfel', 'Sets kan ha max 4 siffror.');
+            if (setsInput.value === "" && repsInput.value === "" && weightInput.value === "") {
+                showMessageModal('Inmatningsfel', 'Minst ett fält för Sets, Reps eller Vikt måste fyllas i.');
                 return false;
             }
 
-            if (reps && (isNaN(reps) || repsInput.value.length > 4)) {
-                showMessageModal('Inmatningsfel', 'Reps kan ha max 4 siffror.');
+            if (setsInput.value !== "" && (isNaN(parseInt(setsInput.value)) || parseInt(setsInput.value) <= 0)) {
+                showMessageModal('Inmatningsfel', 'Sets måste vara ett positivt nummer.');
                 return false;
             }
 
-            if (isNaN(weight) || weight <= 0 || weightInput.value.length > 4) {
-                showMessageModal('Inmatningsfel', 'Vikt måste vara ett positivt nummer och ha max 4 siffror.');
+            if (repsInput.value !== "" && (isNaN(parseInt(repsInput.value)) || parseInt(repsInput.value) <= 0)) {
+                showMessageModal('Inmatningsfel', 'Reps måste vara ett positivt nummer.');
+                return false;
+            }
+
+            if (weightInput.value !== "" && (isNaN(weight) || weight <= 0)) {
+                showMessageModal('Inmatningsfel', 'Vikt måste vara ett positivt nummer.');
                 return false;
             }
 
             return true;
         };
         
-        weekInput.addEventListener('input', (event) => {
-          event.target.value = event.target.value.replace(/[^0-9]/g, '');
-        });
         setsInput.addEventListener('input', (event) => {
-          event.target.value = event.target.value.replace(/[^0-9]/g, '');
+          const value = event.target.value.replace(/[^0-9]/g, '');
+          event.target.value = value.length > 4 ? value.slice(0, 4) : value;
         });
         repsInput.addEventListener('input', (event) => {
-          event.target.value = event.target.value.replace(/[^0-9]/g, '');
+          const value = event.target.value.replace(/[^0-9]/g, '');
+          event.target.value = value.length > 4 ? value.slice(0, 4) : value;
         });
         weightInput.addEventListener('input', (event) => {
-          event.target.value = event.target.value.replace(/[^0-9.]/g, '');
+          const value = event.target.value.replace(/[^0-9.]/g, '');
+          event.target.value = value.length > 4 ? value.slice(0, 4) : value;
         });
 
 
@@ -946,17 +919,16 @@
           }
 
           const exercise = exerciseSelect.value;
-          const week = parseInt(weekInput.value);
+          const date = dateInput.value;
           const sets = setsInput.value ? parseInt(setsInput.value) : null;
           const reps = repsInput.value ? parseInt(repsInput.value) : null;
-          const weight = parseFloat(weightInput.value);
-          const timestamp = Date.now();
+          const weight = weightInput.value ? parseFloat(weightInput.value) : null;
+          const timestamp = new Date(date).getTime();
 
           try {
             await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
-              exercise, week, sets, reps, weight, timestamp
+              exercise, sets, reps, weight, timestamp
             });
-            pastWeeksSelect.value = week;
             showStatusMessage('Sparat!');
           } catch (e) {
             showStatusMessage('Kunde inte spara data.', true);
@@ -990,11 +962,16 @@
         exerciseListDiv.addEventListener('click', async (event) => {
           if (event.target.classList.contains('exercise-tag-remove')) {
             const button = event.target;
-            const tag = button.closest('.exercise-tag');
             const docId = button.dataset.id;
+            const tag = button.closest('.exercise-tag');
             
+            // Remove from UI immediately for better responsiveness
             if (tag) {
                 tag.remove();
+            }
+            const optionToRemove = exerciseSelect.querySelector(`option[data-id="${docId}"]`);
+            if (optionToRemove) {
+                optionToRemove.remove();
             }
 
             try {
@@ -1019,24 +996,13 @@
             }
           }
         });
-
-        pastWeeksSelect.addEventListener('change', () => {
-          renderTable(workoutData, pastWeeksSelect.value);
-        });
         
-        manageExercisesDetails.addEventListener('toggle', () => {
-            if (manageExercisesDetails.open) {
-              const exercises = Array.from(exerciseSelect.options).map(opt => ({name: opt.value}));
-              renderExercises(exercises);
-            }
-        });
-
         const initializeAppLogic = async (db, userId, firebaseConfig) => {
           loginContainer.classList.add('hidden');
           mainContent.classList.remove('hidden');
           currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
 
-          weekInput.value = getWeekNumber(new Date());
+          dateInput.valueAsDate = new Date();
 
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
@@ -1060,7 +1026,7 @@
             renderAllData(workoutData);
           });
 
-          const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
+          const workoutInputFields = [exerciseSelect, dateInput, setsInput, repsInput, weightInput];
           workoutInputFields.forEach(field => {
             field.addEventListener('change', closeManageExercises);
             field.addEventListener('input', closeManageExercises);
