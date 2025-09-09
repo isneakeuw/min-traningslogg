@@ -395,10 +395,6 @@
       </div>
     </div>
     <div id="auth-container">
-      <div id="user-id-input-container">
-        <input type="text" id="user-id-input" class="input-field" placeholder="Klistra in användar-ID här">
-        <button id="load-user-id-button" class="button-primary">Ladda min data</button>
-      </div>
       <p id="current-user-id-display"></p>
     </div>
   </div>
@@ -451,9 +447,7 @@
       const chartEmptyMessage = document.getElementById('chart-empty-message');
       const manageExercisesDetails = document.getElementById('manage-exercises-details');
       const currentUserIdDisplay = document.getElementById('current-user-id-display');
-      const userIdInput = document.getElementById('user-id-input');
-      const loadUserIdButton = document.getElementById('load-user-id-button');
-
+      
       // Loggar in anonymt och sätter upp all funktionalitet efter inloggning
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
@@ -462,18 +456,6 @@
           const userId = user.uid;
           
           currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
-
-          // Här lägger vi till logiken för att ladda data från en annan användare
-          loadUserIdButton.addEventListener('click', () => {
-            const newUserId = userIdInput.value.trim();
-            if (newUserId) {
-              currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
-              // OBS: Omladdning av fönstret är inte den bästa lösningen för att byta användare.
-              // En bättre lösning skulle vara att byta databassökväg dynamiskt
-              // och ladda om data utan att ladda om sidan. Men för enkelhetens skull behåller vi detta.
-              window.location.reload();
-            }
-          });
 
           // Globala variabler för att lagra diagraminstans och data
           let myChart = null;
@@ -820,6 +802,8 @@
             workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderAllData(workoutData);
           });
+          
+          setupListeners(db, userId, firebaseConfig);
         }
       });
     };
