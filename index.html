@@ -925,24 +925,22 @@
             console.error("Fel vid tillägg av övning:", e);
           }
         });
-
+        
+        // Optimistisk borttagning för övningar
         exerciseListDiv.addEventListener('click', async (event) => {
           if (event.target.classList.contains('exercise-tag-remove')) {
             const button = event.target;
             const tag = button.closest('.exercise-tag');
             const docId = button.dataset.id;
             
-            // Optimistisk borttagning: Ta bort elementet omedelbart från DOM
             if (tag) {
                 tag.remove();
             }
 
             try {
-              // Utför den faktiska raderingen i bakgrunden
               await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`, docId));
               showStatusMessage('Övning borttagen.');
             } catch (e) {
-              // Återställ om raderingen misslyckas
               showMessageModal('Fel', 'Kunde inte ta bort övningen. Prova igen.');
               console.error("Fel vid borttagning av övning:", e);
             }
@@ -966,15 +964,6 @@
           renderTable(workoutData, pastWeeksSelect.value);
         });
         
-        // Öppna hantera övningar-detaljer när användaren klickar på den
-        manageExercisesDetails.addEventListener('toggle', () => {
-            if (manageExercisesDetails.open) {
-              // Uppdaterar listan baserat på den senaste data från Firebase
-              const exercises = Array.from(exerciseSelect.options).map(opt => ({name: opt.value}));
-              renderExercises(exercises);
-            }
-        });
-
         const initializeAppLogic = async (db, userId, firebaseConfig) => {
           loginContainer.classList.add('hidden');
           mainContent.classList.remove('hidden');
@@ -986,7 +975,6 @@
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
 
-          // Kollar om standardövningar måste läggas till
           const exercisesRef = collection(db, `artifacts/${appId}/users/${userId}/exercises`);
           const existingExercises = await getDocs(exercisesRef);
           if (existingExercises.empty) {
