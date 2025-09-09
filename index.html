@@ -415,7 +415,8 @@
       // Sätt Firebase-loggnivån till Debug för att se detaljerade felmeddelanden i konsolen.
       setLogLevel('debug');
 
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+      // Firebase-konfigurationen har flyttats hit för att den ska fungera utanför Gemini-miljön.
+      const firebaseConfig = {
         apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
         authDomain: "traningslogg-a271a.firebaseapp.com",
         projectId: "traningslogg-a271a",
@@ -459,12 +460,17 @@
           await signInAnonymously(auth);
         } else {
           const userId = user.uid;
+          
+          currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
 
           // Här lägger vi till logiken för att ladda data från en annan användare
           loadUserIdButton.addEventListener('click', () => {
             const newUserId = userIdInput.value.trim();
             if (newUserId) {
               currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
+              // OBS: Omladdning av fönstret är inte den bästa lösningen för att byta användare.
+              // En bättre lösning skulle vara att byta databassökväg dynamiskt
+              // och ladda om data utan att ladda om sidan. Men för enkelhetens skull behåller vi detta.
               window.location.reload();
             }
           });
