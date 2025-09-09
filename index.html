@@ -584,7 +584,7 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut, setPersistence, browserSessionPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
@@ -837,6 +837,7 @@
         anonymousSignInButton.addEventListener('click', async () => {
           showModal('loading-modal');
           try {
+            // Anonym inloggning
             await signInAnonymously(auth);
             hideModal('loading-modal');
           } catch (e) {
@@ -850,6 +851,8 @@
           showModal('loading-modal');
           try {
             const provider = new GoogleAuthProvider();
+            // Ställer in uthållighet för sessionen innan inloggning
+            await setPersistence(auth, browserSessionPersistence);
             await signInWithPopup(auth, provider);
             hideModal('loading-modal');
           } catch (e) {
@@ -929,7 +932,7 @@
             const tag = button.closest('.exercise-tag');
             const docId = button.dataset.id;
             
-            // Optimistisk borttagning: Ta bort elementet omedelbart
+            // Optimistisk borttagning: Ta bort elementet omedelbart från DOM
             if (tag) {
                 tag.remove();
             }
@@ -1013,9 +1016,6 @@
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             const userId = user.uid;
-            loginContainer.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            logoutButton.classList.remove('hidden');
             initializeAppLogic(db, userId, firebaseConfig);
           } else {
             loginContainer.classList.remove('hidden');
