@@ -428,402 +428,398 @@
       const app = initializeApp(firebaseConfig);
       const db = getFirestore(app);
       const auth = getAuth(app);
-      let userId;
 
-      // Loggar in anonymt för att hantera användare
+      // Loggar in anonymt och sätter upp all funktionalitet efter inloggning
       onAuthStateChanged(auth, async (user) => {
         if (!user) {
           await signInAnonymously(auth);
         } else {
-          userId = user.uid;
-          currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
-          startListeners(db, userId, firebaseConfig);
-        }
-      });
+          const userId = user.uid;
 
-      // Hämtar referenser till alla DOM-element
-      const exerciseSelect = document.getElementById('exercise-select');
-      const weekInput = document.getElementById('week-input');
-      const pastWeeksSelect = document.getElementById('past-weeks-select');
-      const setsInput = document.getElementById('sets-input');
-      const repsInput = document.getElementById('reps-input');
-      const weightInput = document.getElementById('weight-input');
-      const saveButton = document.getElementById('save-button');
-      const newExerciseInput = document.getElementById('new-exercise-input');
-      const addExerciseButton = document.getElementById('add-exercise-button');
-      const exerciseListDiv = document.getElementById('exercise-list');
-      const tableBody = document.getElementById('table-body');
-      const tableHead = document.getElementById('table-head');
-      const statusMessageDiv = document.getElementById('status-message');
-      const tableContainer = document.getElementById('table-container');
-      const dataListEmptyMessage = document.getElementById('data-list-empty-message');
-      const weightChart = document.getElementById('weight-chart');
-      const chartEmptyMessage = document.getElementById('chart-empty-message');
-      const manageExercisesDetails = document.getElementById('manage-exercises-details');
-      const currentUserIdDisplay = document.getElementById('current-user-id-display');
-      const userIdInput = document.getElementById('user-id-input');
-      const loadUserIdButton = document.getElementById('load-user-id-button');
+          // Hämtar referenser till alla DOM-element
+          const exerciseSelect = document.getElementById('exercise-select');
+          const weekInput = document.getElementById('week-input');
+          const pastWeeksSelect = document.getElementById('past-weeks-select');
+          const setsInput = document.getElementById('sets-input');
+          const repsInput = document.getElementById('reps-input');
+          const weightInput = document.getElementById('weight-input');
+          const saveButton = document.getElementById('save-button');
+          const newExerciseInput = document.getElementById('new-exercise-input');
+          const addExerciseButton = document.getElementById('add-exercise-button');
+          const exerciseListDiv = document.getElementById('exercise-list');
+          const tableBody = document.getElementById('table-body');
+          const tableHead = document.getElementById('table-head');
+          const statusMessageDiv = document.getElementById('status-message');
+          const tableContainer = document.getElementById('table-container');
+          const dataListEmptyMessage = document.getElementById('data-list-empty-message');
+          const weightChart = document.getElementById('weight-chart');
+          const chartEmptyMessage = document.getElementById('chart-empty-message');
+          const manageExercisesDetails = document.getElementById('manage-exercises-details');
+          const currentUserIdDisplay = document.getElementById('current-user-id-display');
+          const userIdInput = document.getElementById('user-id-input');
+          const loadUserIdButton = document.getElementById('load-user-id-button');
+          
+          // Globala variabler för att lagra diagraminstans och data
+          let myChart = null;
+          let workoutData = [];
 
-      // Globala variabler för att lagra diagraminstans och data
-      let myChart = null;
-      let workoutData = [];
+          // Default-övningar
+          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
 
-      // Default-övningar
-      const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
-
-      // Funktion för att beräkna veckonummer
-      const getWeekNumber = date => {
-        const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-        const dayNum = d.getUTCDay() || 7;
-        d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-        return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-      };
-
-      // Ritar om listan med övningar och dropdown-menyn
-      const renderExercises = exercises => {
-        exerciseSelect.innerHTML = '';
-        exerciseListDiv.innerHTML = '';
-        if (exercises.length === 0) {
-          defaultExercises.forEach(async name => {
-            await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`), { name });
-          });
-          return;
-        }
-        exercises.sort((a, b) => a.name.localeCompare(b.name));
-        exercises.forEach(ex => {
-          const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
-          exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
-          exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
-        });
-      };
-
-      // Ritar om all data (tabell och diagram)
-      const renderAllData = workoutData => {
-        renderWorkoutData(workoutData);
-        renderChart(workoutData);
-      };
-
-      // Ritar om träningsdatan i tabellen och uppdaterar veckodrodown
-      const renderWorkoutData = data => {
-        const uniqueWeeks = [...new Set(data.map(item => item.week))].sort((a, b) => b - a);
-        populateWeekDropdown(uniqueWeeks);
-        const selectedWeek = pastWeeksSelect.value;
-        const selectedWeekInt = parseInt(selectedWeek);
-        if (uniqueWeeks.includes(selectedWeekInt)) {
-          renderTable(data, selectedWeek);
-        } else {
-          if (uniqueWeeks.length > 0) {
-            const latestWeek = uniqueWeeks[0];
-            pastWeeksSelect.value = latestWeek;
-            renderTable(data, latestWeek);
-          } else {
-            renderTable(data, null);
-          }
-        }
-      };
-
-      // Ritar om diagrammet
-      const renderChart = data => {
-        chartEmptyMessage.classList.toggle('hidden', data.length > 0);
-        if (myChart) myChart.destroy();
-        if (data.length === 0) return;
-        const grouped = data.reduce((acc, entry) => {
-          (acc[entry.week] = acc[entry.week] || {})[entry.exercise] = (acc[entry.week][entry.exercise] || []).concat(entry);
-          return acc;
-        }, {});
-        const weeks = Object.keys(grouped).sort((a, b) => a - b);
-        const exercises = [...new Set(data.map(item => item.exercise))].sort();
-        const datasets = exercises.map(ex => {
-          const displayedName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
-          return {
-            label: displayedName,
-            data: weeks.map(w => grouped[w][ex] ? grouped[w][ex].reduce((a, b) => (a.timestamp > b.timestamp) ? a : b).weight : null),
-            borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
-            tension: .1,
-            fill: false,
-            spanGaps: true
+          // Funktion för att beräkna veckonummer
+          const getWeekNumber = date => {
+            const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+            const dayNum = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
           };
-        });
-        myChart = new Chart(weightChart, {
-          type: 'line',
-          data: {
-            labels: weeks.map(w => `Vecka ${w}`),
-            datasets
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                labels: {
-                  color: '#e0e0e0'
-                }
-              }
-            },
-            scales: {
-              x: {
-                ticks: {
-                  color: '#e0e0e0'
-                },
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                title: {
-                  display: true,
-                  text: 'Vecka',
-                  color: '#e0e0e0'
-                }
-              },
-              y: {
-                ticks: {
-                  color: '#e0e0e0'
-                },
-                grid: {
-                  color: 'rgba(255, 255, 255, 0.1)'
-                },
-                title: {
-                  display: true,
-                  text: 'Vikt (kg)',
-                  color: '#e0e0e0'
-                }
-              }
+
+          // Ritar om listan med övningar och dropdown-menyn
+          const renderExercises = exercises => {
+            exerciseSelect.innerHTML = '';
+            exerciseListDiv.innerHTML = '';
+            if (exercises.length === 0) {
+              defaultExercises.forEach(async name => {
+                await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`), { name });
+              });
+              return;
             }
-          }
-        });
-      };
-
-      // Fyller dropdown-menyn för veckor
-      const populateWeekDropdown = weeks => {
-        const currentVal = pastWeeksSelect.value;
-        pastWeeksSelect.innerHTML = '';
-        weeks.forEach(week => pastWeeksSelect.innerHTML += `<option value="${week}">Vecka ${week}</option>`);
-        if (weeks.length > 0) {
-          if (weeks.includes(parseInt(currentVal))) {
-            pastWeeksSelect.value = currentVal;
-          } else {
-            pastWeeksSelect.value = weeks[0];
-          }
-        } else {
-          pastWeeksSelect.innerHTML = '<option value="">Inga veckor</option>';
-        }
-      };
-
-      // Ritar om tabellen för träningshistorik
-      const renderTable = (data, selectedWeek) => {
-        tableHead.innerHTML = '<tr><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
-        tableBody.innerHTML = '';
-        const filtered = selectedWeek ? data.filter(item => item.week === parseInt(selectedWeek)) : [];
-        dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
-        if (filtered.length === 0) {
-          tableContainer.style.display = 'none';
-          return;
-        }
-        tableContainer.style.display = 'block';
-        const exercises = [...new Set(filtered.map(item => item.exercise))].sort();
-        exercises.forEach(ex => {
-          const displayedExName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
-          const latest = filtered.filter(item => item.exercise === ex).reduce((a, b) => (a.timestamp > b.timestamp) ? a : b);
-          tableBody.innerHTML += `<tr><td>${displayedExName}</td><td>${latest.sets ?? '-'}</td><td>${latest.reps ?? '-'}</td><td>${latest.weight}</td><td><button data-id="${latest.id}" class="delete-entry-button">X</button></td></tr>`;
-        });
-      };
-
-      // Funktion för att begränsa inmatningsfältens längd
-      const enforceMaxLength = event => {
-        const maxLength = 4;
-        const element = event.target;
-        element.value = element.value.replace(',', '.');
-        if (element.value.length > maxLength) {
-          element.value = element.value.slice(0, maxLength);
-        }
-      };
-
-      // Funktion för att visa statusmeddelande
-      const showStatusMessage = (message, type) => {
-        statusMessageDiv.textContent = message;
-        statusMessageDiv.classList.add(type);
-        statusMessageDiv.classList.remove(type === 'success' ? 'error' : 'success');
-        setTimeout(() => {
-          statusMessageDiv.textContent = "";
-          statusMessageDiv.classList.remove(type);
-        }, type === 'success' ? 2000 : 3000);
-      };
-
-      // Funktion för att sätta upp alla eventlyssnare
-      const setupListeners = () => {
-        // Eventlyssnare för "Spara"
-        saveButton.addEventListener('click', async () => {
-          const exercise = exerciseSelect.value;
-          const week = parseInt(weekInput.value);
-          const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
-          const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
-          const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
-          const timestamp = Date.now();
-
-          if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
-            showStatusMessage("Fyll i alla fält korrekt.", 'error');
-            return;
-          }
-
-          try {
-            await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/workouts`), {
-              exercise,
-              week,
-              sets,
-              reps,
-              weight,
-              timestamp
+            exercises.sort((a, b) => a.name.localeCompare(b.name));
+            exercises.forEach(ex => {
+              const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
+              exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
+              exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
             });
-            showStatusMessage("Data sparad!", 'success');
-            [setsInput, repsInput, weightInput].forEach(i => i.value = '');
-          } catch (e) {
-            console.error("Fel vid spara data:", e);
-            showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
-          }
-        });
+          };
 
-        // Eventlyssnare för "Lägg till"
-        addExerciseButton.addEventListener('click', async () => {
-          const newExerciseName = newExerciseInput.value.trim();
-          if (!newExerciseName) {
-            showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
-            return;
-          }
+          // Ritar om all data (tabell och diagram)
+          const renderAllData = workoutData => {
+            renderWorkoutData(workoutData);
+            renderChart(workoutData);
+          };
 
-          // Sök efter befintlig övning för att undvika dubletter
-          const q = query(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`), where("name", "==", newExerciseName));
-          const querySnapshot = await getDocs(q);
-          if (!querySnapshot.empty) {
-            showStatusMessage("Denna övning finns redan.", 'error');
-            return;
-          }
-
-          try {
-            await addDoc(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`), { name: newExerciseName });
-            newExerciseInput.value = '';
-            showStatusMessage("Övning tillagd!", 'success');
-          } catch (e) {
-            console.error("Fel vid tillägg av övning:", e);
-            showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
-          }
-        });
-
-        // Eventdelegation för klick på dynamiska övningstaggar
-        exerciseListDiv.addEventListener('click', async e => {
-          if (e.target.classList.contains('exercise-tag-remove')) {
-            const docId = e.target.dataset.id;
-            try {
-              // Hämta övningsnamnet innan vi tar bort dokumentet
-              const exerciseDocRef = doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/exercises`, docId);
-              const exerciseDoc = await getDoc(exerciseDocRef);
-              const exerciseName = exerciseDoc.data().name;
-
-              // Fråga efter alla träningspass som matchar övningsnamnet
-              const workoutsQuery = query(collection(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/workouts`), where("exercise", "==", exerciseName));
-              const workoutsSnapshot = await getDocs(workoutsQuery);
-
-              // Radera alla matchande träningspass
-              const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/workouts`, workoutDoc.id)));
-              await Promise.all(deletePromises);
-
-              // Radera sedan själva övningsdokumentet
-              await deleteDoc(exerciseDocRef);
-
-              showStatusMessage("Övning och all associerad data borttagen!", 'success');
-            } catch (e) {
-              console.error("Fel vid borttagning av övning och data:", e);
-              showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
+          // Ritar om träningsdatan i tabellen och uppdaterar veckodrodown
+          const renderWorkoutData = data => {
+            const uniqueWeeks = [...new Set(data.map(item => item.week))].sort((a, b) => b - a);
+            populateWeekDropdown(uniqueWeeks);
+            const selectedWeek = pastWeeksSelect.value;
+            const selectedWeekInt = parseInt(selectedWeek);
+            if (uniqueWeeks.includes(selectedWeekInt)) {
+              renderTable(data, selectedWeek);
+            } else {
+              if (uniqueWeeks.length > 0) {
+                const latestWeek = uniqueWeeks[0];
+                pastWeeksSelect.value = latestWeek;
+                renderTable(data, latestWeek);
+              } else {
+                renderTable(data, null);
+              }
             }
-          }
-        });
+          };
 
-        // Eventdelegation för klick på tabellrader
-        tableBody.addEventListener('click', async e => {
-          if (e.target.classList.contains('delete-entry-button')) {
-            const docId = e.target.dataset.id;
-            try {
-              await deleteDoc(doc(db, `artifacts/${firebaseConfig.projectId}/users/${userId}/workouts`, docId));
-              showStatusMessage("Inmatning borttagen!", 'success');
-            } catch (e) {
-              console.error("Fel vid borttagning av inmatning:", e);
-              showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
+          // Ritar om diagrammet
+          const renderChart = data => {
+            chartEmptyMessage.classList.toggle('hidden', data.length > 0);
+            if (myChart) myChart.destroy();
+            if (data.length === 0) return;
+            const grouped = data.reduce((acc, entry) => {
+              (acc[entry.week] = acc[entry.week] || {})[entry.exercise] = (acc[entry.week][entry.exercise] || []).concat(entry);
+              return acc;
+            }, {});
+            const weeks = Object.keys(grouped).sort((a, b) => a - b);
+            const exercises = [...new Set(data.map(item => item.exercise))].sort();
+            const datasets = exercises.map(ex => {
+              const displayedName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
+              return {
+                label: displayedName,
+                data: weeks.map(w => grouped[w][ex] ? grouped[w][ex].reduce((a, b) => (a.timestamp > b.timestamp) ? a : b).weight : null),
+                borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
+                tension: .1,
+                fill: false,
+                spanGaps: true
+              };
+            });
+            myChart = new Chart(weightChart, {
+              type: 'line',
+              data: {
+                labels: weeks.map(w => `Vecka ${w}`),
+                datasets
+              },
+              options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                  legend: {
+                    labels: {
+                      color: '#e0e0e0'
+                    }
+                  }
+                },
+                scales: {
+                  x: {
+                    ticks: {
+                      color: '#e0e0e0'
+                    },
+                    grid: {
+                      color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    title: {
+                      display: true,
+                      text: 'Vecka',
+                      color: '#e0e0e0'
+                    }
+                  },
+                  y: {
+                    ticks: {
+                      color: '#e0e0e0'
+                    },
+                    grid: {
+                      color: 'rgba(255, 255, 255, 0.1)'
+                    },
+                    title: {
+                      display: true,
+                      text: 'Vikt (kg)',
+                      color: '#e0e0e0'
+                    }
+                  }
+                }
+              }
+            });
+          };
+
+          // Fyller dropdown-menyn för veckor
+          const populateWeekDropdown = weeks => {
+            const currentVal = pastWeeksSelect.value;
+            pastWeeksSelect.innerHTML = '';
+            weeks.forEach(week => pastWeeksSelect.innerHTML += `<option value="${week}">Vecka ${week}</option>`);
+            if (weeks.length > 0) {
+              if (weeks.includes(parseInt(currentVal))) {
+                pastWeeksSelect.value = currentVal;
+              } else {
+                pastWeeksSelect.value = weeks[0];
+              }
+            } else {
+              pastWeeksSelect.innerHTML = '<option value="">Inga veckor</option>';
             }
+          };
+
+          // Ritar om tabellen för träningshistorik
+          const renderTable = (data, selectedWeek) => {
+            tableHead.innerHTML = '<tr><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
+            tableBody.innerHTML = '';
+            const filtered = selectedWeek ? data.filter(item => item.week === parseInt(selectedWeek)) : [];
+            dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
+            if (filtered.length === 0) {
+              tableContainer.style.display = 'none';
+              return;
+            }
+            tableContainer.style.display = 'block';
+            const exercises = [...new Set(filtered.map(item => item.exercise))].sort();
+            exercises.forEach(ex => {
+              const displayedExName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
+              const latest = filtered.filter(item => item.exercise === ex).reduce((a, b) => (a.timestamp > b.timestamp) ? a : b);
+              tableBody.innerHTML += `<tr><td>${displayedExName}</td><td>${latest.sets ?? '-'}</td><td>${latest.reps ?? '-'}</td><td>${latest.weight}</td><td><button data-id="${latest.id}" class="delete-entry-button">X</button></td></tr>`;
+            });
+          };
+
+          // Funktion för att begränsa inmatningsfältens längd
+          const enforceMaxLength = event => {
+            const maxLength = 4;
+            const element = event.target;
+            element.value = element.value.replace(',', '.');
+            if (element.value.length > maxLength) {
+              element.value = element.value.slice(0, maxLength);
+            }
+          };
+
+          // Funktion för att visa statusmeddelande
+          const showStatusMessage = (message, type) => {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.classList.add(type);
+            statusMessageDiv.classList.remove(type === 'success' ? 'error' : 'success');
+            setTimeout(() => {
+              statusMessageDiv.textContent = "";
+              statusMessageDiv.classList.remove(type);
+            }, type === 'success' ? 2000 : 3000);
+          };
+
+          // Funktion för att sätta upp alla eventlyssnare
+          const setupListeners = (db, currentUserId, config) => {
+            // Eventlyssnare för "Spara"
+            saveButton.addEventListener('click', async () => {
+              const exercise = exerciseSelect.value;
+              const week = parseInt(weekInput.value);
+              const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
+              const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
+              const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
+              const timestamp = Date.now();
+
+              if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
+                showStatusMessage("Fyll i alla fält korrekt.", 'error');
+                return;
+              }
+
+              try {
+                await addDoc(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`), {
+                  exercise,
+                  week,
+                  sets,
+                  reps,
+                  weight,
+                  timestamp
+                });
+                showStatusMessage("Data sparad!", 'success');
+                [setsInput, repsInput, weightInput].forEach(i => i.value = '');
+              } catch (e) {
+                console.error("Fel vid spara data:", e);
+                showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
+              }
+            });
+
+            // Eventlyssnare för "Lägg till"
+            addExerciseButton.addEventListener('click', async () => {
+              const newExerciseName = newExerciseInput.value.trim();
+              if (!newExerciseName) {
+                showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
+                return;
+              }
+
+              // Sök efter befintlig övning för att undvika dubletter
+              const q = query(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`), where("name", "==", newExerciseName));
+              const querySnapshot = await getDocs(q);
+              if (!querySnapshot.empty) {
+                showStatusMessage("Denna övning finns redan.", 'error');
+                return;
+              }
+
+              try {
+                await addDoc(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`), { name: newExerciseName });
+                newExerciseInput.value = '';
+                showStatusMessage("Övning tillagd!", 'success');
+              } catch (e) {
+                console.error("Fel vid tillägg av övning:", e);
+                showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
+              }
+            });
+
+            // Eventdelegation för klick på dynamiska övningstaggar
+            exerciseListDiv.addEventListener('click', async e => {
+              if (e.target.classList.contains('exercise-tag-remove')) {
+                const docId = e.target.dataset.id;
+                try {
+                  // Hämta övningsnamnet innan vi tar bort dokumentet
+                  const exerciseDocRef = doc(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`, docId);
+                  const exerciseDoc = await getDoc(exerciseDocRef);
+                  const exerciseName = exerciseDoc.data().name;
+
+                  // Fråga efter alla träningspass som matchar övningsnamnet
+                  const workoutsQuery = query(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`), where("exercise", "==", exerciseName));
+                  const workoutsSnapshot = await getDocs(workoutsQuery);
+
+                  // Radera alla matchande träningspass
+                  const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`, workoutDoc.id)));
+                  await Promise.all(deletePromises);
+
+                  // Radera sedan själva övningsdokumentet
+                  await deleteDoc(exerciseDocRef);
+
+                  showStatusMessage("Övning och all associerad data borttagen!", 'success');
+                } catch (e) {
+                  console.error("Fel vid borttagning av övning och data:", e);
+                  showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
+                }
+              }
+            });
+
+            // Eventdelegation för klick på tabellrader
+            tableBody.addEventListener('click', async e => {
+              if (e.target.classList.contains('delete-entry-button')) {
+                const docId = e.target.dataset.id;
+                try {
+                  await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`, docId));
+                  showStatusMessage("Inmatning borttagen!", 'success');
+                } catch (e) {
+                  console.error("Fel vid borttagning av inmatning:", e);
+                  showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
+                }
+              }
+            });
+
+            // Eventlyssnare för att byta vecka
+            pastWeeksSelect.addEventListener('change', () => {
+              renderWorkoutData(workoutData);
+            });
+
+            weekInput.addEventListener('input', enforceMaxLength);
+            setsInput.addEventListener('input', enforceMaxLength);
+            repsInput.addEventListener('input', enforceMaxLength);
+            weightInput.addEventListener('input', enforceMaxLength);
+
+            const handleNumberInputKeydown = event => {
+              const invalidChars = ['e', '+', '-'];
+              const target = event.target;
+              if (invalidChars.includes(event.key.toLowerCase())) {
+                event.preventDefault();
+              }
+              if (target.id === 'weight-input' && event.key === ',') {
+                event.preventDefault();
+                target.value += '.';
+              }
+            };
+
+            weekInput.addEventListener('keydown', handleNumberInputKeydown);
+            setsInput.addEventListener('keydown', handleNumberInputKeydown);
+            repsInput.addEventListener('keydown', handleNumberInputKeydown);
+            weightInput.addEventListener('keydown', handleNumberInputKeydown);
+
+            const closeManageExercises = () => {
+              if (manageExercisesDetails.open) {
+                manageExercisesDetails.open = false;
+              }
+            };
+
+            const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
+            workoutInputFields.forEach(field => {
+              field.addEventListener('change', closeManageExercises);
+              field.addEventListener('input', closeManageExercises);
+            });
+
+            document.addEventListener('click', event => {
+              if (!manageExercisesDetails.contains(event.target)) {
+                closeManageExercises();
+              }
+            });
+
+            loadUserIdButton.addEventListener('click', async () => {
+              const newUserId = userIdInput.value.trim();
+              if (newUserId) {
+                currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
+                startListeners(db, newUserId, config);
+              }
+            });
+            
+            // Initiala anrop
+            weekInput.value = getWeekNumber(new Date());
+
+            // Funktion för att sätta igång Firebase-lyssnare
+            const startListeners = (db, currentUserId, config) => {
+              // Lyssna på realtidsuppdateringar från databasen för övningar och träningsdata
+              onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`), snapshot => {
+                const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderExercises(exercises);
+              });
+
+              onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`), snapshot => {
+                workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAllData(workoutData);
+              });
+            };
+
+            startListeners(db, userId, firebaseConfig);
           }
         });
-
-        // Eventlyssnare för att byta vecka
-        pastWeeksSelect.addEventListener('change', () => {
-          renderWorkoutData(workoutData);
-        });
-
-        weekInput.addEventListener('input', enforceMaxLength);
-        setsInput.addEventListener('input', enforceMaxLength);
-        repsInput.addEventListener('input', enforceMaxLength);
-        weightInput.addEventListener('input', enforceMaxLength);
-
-        const handleNumberInputKeydown = event => {
-          const invalidChars = ['e', '+', '-'];
-          const target = event.target;
-          if (invalidChars.includes(event.key.toLowerCase())) {
-            event.preventDefault();
-          }
-          if (target.id === 'weight-input' && event.key === ',') {
-            event.preventDefault();
-            target.value += '.';
-          }
-        };
-
-        weekInput.addEventListener('keydown', handleNumberInputKeydown);
-        setsInput.addEventListener('keydown', handleNumberInputKeydown);
-        repsInput.addEventListener('keydown', handleNumberInputKeydown);
-        weightInput.addEventListener('keydown', handleNumberInputKeydown);
-
-        const closeManageExercises = () => {
-          if (manageExercisesDetails.open) {
-            manageExercisesDetails.open = false;
-          }
-        };
-
-        const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
-        workoutInputFields.forEach(field => {
-          field.addEventListener('change', closeManageExercises);
-          field.addEventListener('input', closeManageExercises);
-        });
-
-        document.addEventListener('click', event => {
-          if (!manageExercisesDetails.contains(event.target)) {
-            closeManageExercises();
-          }
-        });
-
-        loadUserIdButton.addEventListener('click', async () => {
-          const newUserId = userIdInput.value.trim();
-          if (newUserId) {
-            currentUserIdDisplay.textContent = `Ditt användar-ID: ${newUserId}`;
-            startListeners(db, newUserId, firebaseConfig);
-          }
-        });
-
-        // Initiala anrop
-        weekInput.value = getWeekNumber(new Date());
       };
-
-      // Funktion för att sätta igång Firebase-lyssnare
-      const startListeners = (db, currentUserId, config) => {
-        // Lyssna på realtidsuppdateringar från databasen för övningar och träningsdata
-        onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/exercises`), snapshot => {
-          const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderExercises(exercises);
-        });
-
-        onSnapshot(collection(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`), snapshot => {
-          workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-          renderAllData(workoutData);
-        });
-      };
-
-      setupListeners();
-    };
 
     window.onload = setupApp;
   </script>
