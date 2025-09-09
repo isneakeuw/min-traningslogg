@@ -327,6 +327,11 @@
     .styled-table th:last-child,
     .styled-table td:last-child { /* X-knapp */
       width: 10%;
+      display: flex; /* Använd flexbox för centrering */
+      align-items: center; /* Centrera vertikalt */
+      justify-content: center; /* Centrera horisontellt */
+      height: 100%; /* Se till att cellen fyller höjden för korrekt centrering */
+      box-sizing: border-box; /* Inkludera padding/border i bredden */
     }
     
     .styled-table tbody tr:hover {
