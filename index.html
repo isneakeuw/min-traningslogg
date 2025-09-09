@@ -234,6 +234,7 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      position: relative;
     }
 
     .exercise-tag-remove {
@@ -509,11 +510,11 @@
               <input type="number" inputmode="numeric" id="week-input" class="input-field" min="1">
             </div>
             <div class="input-item">
-              <label for="sets-input">Sets</label>
+              <label for="sets-input">Sets (valfritt)</label>
               <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1">
             </div>
             <div class="input-item">
-              <label for="reps-input">Reps</label>
+              <label for="reps-input">Reps (valfritt)</label>
               <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1">
             </div>
             <div class="input-item">
@@ -669,7 +670,7 @@
           exercises.forEach(ex => {
             const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
             exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
-            exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
+            exerciseListDiv.innerHTML += `<div class="exercise-tag" id="ex-${ex.id}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
           });
         };
 
@@ -796,8 +797,8 @@
               const row = document.createElement('tr');
               row.innerHTML = `
                 <td>${item.exercise}</td>
-                <td>${item.sets}</td>
-                <td>${item.reps}</td>
+                <td>${item.sets || '-'}</td>
+                <td>${item.reps || '-'}</td>
                 <td>${item.weight}</td>
                 <td><button data-id="${item.id}" class="delete-entry-button">X</button></td>
               `;
@@ -877,13 +878,13 @@
         saveButton.addEventListener('click', async () => {
           const exercise = exerciseSelect.value;
           const week = parseInt(weekInput.value);
-          const sets = parseInt(setsInput.value);
-          const reps = parseInt(repsInput.value);
+          const sets = setsInput.value ? parseInt(setsInput.value) : null;
+          const reps = repsInput.value ? parseInt(repsInput.value) : null;
           const weight = parseFloat(weightInput.value);
           const timestamp = Date.now();
 
-          if (!exercise || isNaN(week) || isNaN(sets) || isNaN(reps) || isNaN(weight) || weight <= 0) {
-            showMessageModal('Inmatningsfel', 'Vänligen fyll i alla fält korrekt.');
+          if (!exercise || isNaN(week) || isNaN(weight) || weight <= 0) {
+            showMessageModal('Inmatningsfel', 'Vänligen fyll i övning, vecka och vikt.');
             return;
           }
 
@@ -891,7 +892,7 @@
             await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
               exercise, week, sets, reps, weight, timestamp
             });
-            pastWeeksSelect.value = week; // Automatiskt välj den nya veckan
+            pastWeeksSelect.value = week;
             showStatusMessage('Sparat!');
           } catch (e) {
             showStatusMessage('Kunde inte spara data.', true);
@@ -924,12 +925,22 @@
 
         exerciseListDiv.addEventListener('click', async (event) => {
           if (event.target.classList.contains('exercise-tag-remove')) {
-            const docId = event.target.dataset.id;
+            const button = event.target;
+            const tag = button.closest('.exercise-tag');
+            const docId = button.dataset.id;
+            
+            // Optimistisk borttagning: Ta bort elementet omedelbart
+            if (tag) {
+                tag.remove();
+            }
+
             try {
+              // Utför den faktiska raderingen i bakgrunden
               await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`, docId));
               showStatusMessage('Övning borttagen.');
             } catch (e) {
-              showStatusMessage('Kunde inte ta bort övning.', true);
+              // Återställ om raderingen misslyckas
+              showMessageModal('Fel', 'Kunde inte ta bort övningen. Prova igen.');
               console.error("Fel vid borttagning av övning:", e);
             }
           }
