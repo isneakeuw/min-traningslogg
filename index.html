@@ -4,7 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Greve Draculas Träningslogg</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
+    /* Anpassad fontstack för att efterlikna Apples "San Francisco" */
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
     :root {
       --bg-color: #2a1443;
       --container-bg-color: #3f225e;
@@ -23,58 +26,41 @@
     }
 
     body {
-      font-family: 'Roboto', sans-serif;
+      /* Uppdaterad fontstack för att matcha Apples look */
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
       color: var(--text-color);
-      background: linear-gradient(135deg, #1f0c2f 0%, #2a1443 50%, #1f0c2f 100%);
-      padding: 1rem;
+      /* Uppdaterad bakgrund för att matcha resten av appen */
+      background: linear-gradient(135deg, #18141d 0%, #2a1443 50%, #18141d 100%);
+      min-height: 100vh;
       display: flex;
       flex-direction: column;
       align-items: center;
-      min-height: 100vh;
-      overflow-x: hidden;
+      padding: 1rem;
     }
 
-    @media (min-width: 640px) {
-      body {
-        padding: 2rem;
+    /* Glass Effect Styles */
+    .glass-effect {
+        backdrop-filter: blur(10px);
+        background-color: rgba(63, 34, 94, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+        -webkit-backdrop-filter: blur(10px);
+        animation: glass-card-in 0.8s ease-out forwards;
+    }
+    
+    @keyframes glass-card-in {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
       }
     }
-
-    #app-container {
-      width: 100%;
-      max-width: 32rem;
-      background-color: var(--container-bg-color);
-      border-radius: 1rem;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      padding: 1.5rem;
-      position: relative;
+    .text-shadow-md {
+      text-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    @media (min-width: 640px) {
-      #app-container {
-        padding: 2rem;
-      }
-    }
-
-    #app-header {
-      margin-bottom: 2.5rem;
-      text-align: center;
-    }
-
-    #app-header h1 {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: var(--header-color);
-      margin-bottom: .25rem;
-      text-shadow: 0 0 10px var(--neon-lila);
-    }
-
-    @media (min-width: 640px) {
-      #app-header h1 {
-        font-size: 2.25rem;
-      }
-    }
-
     .card {
       background-color: var(--card-bg-color);
       padding: 1.25rem;
@@ -101,40 +87,6 @@
     }
 
 
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      align-items: center;
-    }
-
-    .input-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      width: 100%;
-    }
-
-    @media (min-width: 640px) {
-      .input-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-      }
-    }
-
-    .input-item {
-      display: flex;
-      flex-direction: column;
-      gap: .25rem;
-      align-items: center;
-    }
-
-    .input-item label {
-      color: #9ca3af;
-      font-size: .875rem;
-      font-weight: 600;
-    }
-
     .input-field {
       background-color: var(--input-bg-color);
       color: white;
@@ -148,12 +100,6 @@
       font-size: 16px;
       transition: border-color 0.3s ease, box-shadow 0.3s ease;
     }
-
-    #exercise-select,
-    #past-weeks-select {
-      max-width: 15rem;
-    }
-
     .input-field:focus {
       border-color: var(--neon-lila);
       box-shadow: 0 0 8px rgba(168, 121, 230, 0.6);
@@ -243,13 +189,15 @@
       position: relative;
     }
 
+    /* Borta med marginal från X-knappen för övningar */
     .exercise-tag-remove {
       background-color: transparent;
-      color: var(--text-color);
+      color: var(--neon-lila);
       border: none;
-      margin-left: .25rem;
-      font-size: 1.1rem;
-      padding: .5rem;
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: bold;
+      padding: 0;
       cursor: pointer;
       line-height: 1;
       display: flex;
@@ -257,19 +205,22 @@
       justify-content: center;
     }
 
+    /* Borta med marginal från X-knappen för inmatningar */
     .delete-entry-button {
       background-color: transparent;
-      color: var(--danger-color);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: .2rem .4rem;
+      color: var(--neon-lila);
+      font-weight: bold;
+      font-size: 1.5rem;
+      line-height: 1;
+      padding: 0;
       border: none;
+      cursor: pointer;
     }
-
+    
     .styled-table {
       border-collapse: collapse;
       width: 100%;
-      font-size: .875rem;
+      font-size: 1rem;
       table-layout: fixed;
     }
     
@@ -278,8 +229,11 @@
       padding: .5rem .75rem;
       border: 1px solid var(--border-color);
       text-align: center;
+      word-wrap: break-word;
+      font-size: 1rem; /* Adjust font size here */
+      color: var(--text-color);
     }
-
+    
     .styled-table thead th {
       background-color: var(--card-bg-color);
       color: var(--neon-lila);
@@ -294,19 +248,15 @@
       border-top-right-radius: .5rem;
     }
     
-    /* Justerade bredder för mobil */
     .styled-table th:nth-child(1),
     .styled-table td:nth-child(1) { /* Datum */
       width: 20%;
-      text-align: left; /* Datum ser bättre ut vänsterjusterat */
-      font-size: 0.75rem; /* Mindre text för att spara utrymme */
+      text-align: left;
     }
     
     .styled-table th:nth-child(2),
     .styled-table td:nth-child(2) { /* Övning */
       width: 25%;
-      word-break: break-word; /* Bryter ord för långa namn */
-      font-size: 0.75rem; /* Mindre text för att spara utrymme */
     }
     
     .styled-table th:nth-child(3),
@@ -327,15 +277,14 @@
     .styled-table th:last-child,
     .styled-table td:last-child { /* X-knapp */
       width: 10%;
-      display: flex; /* Använd flexbox för centrering */
-      align-items: center; /* Centrera vertikalt */
-      justify-content: center; /* Centrera horisontellt */
-      height: 100%; /* Se till att cellen fyller höjden för korrekt centrering */
-      box-sizing: border-box; /* Inkludera padding/border i bredden */
     }
-    
+
     .styled-table tbody tr:hover {
       background-color: rgba(62, 62, 62, 0.5);
+    }
+    
+    .exercise-tag-remove:hover, .delete-entry-button:hover {
+      color: var(--neon-lila-hover);
     }
 
     input[type="number"]::-webkit-inner-spin-button,
@@ -346,14 +295,6 @@
 
     input[type="number"] {
       -moz-appearance: textfield;
-    }
-
-    .save-button-container {
-      grid-column: 1 / -1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: .5rem;
     }
 
     #chart-container {
@@ -412,6 +353,7 @@
       display: flex;
       flex-direction: column;
       align-items: center;
+      /* Lägg till fade-in effekt */
       opacity: 0;
       animation: fadeIn 0.5s ease-out forwards;
     }
@@ -435,32 +377,11 @@
       width: 100%;
       max-width: 20rem;
     }
-
-    /* Glass Effect Styles */
-    .glass-effect {
-        backdrop-filter: blur(10px);
-        background-color: rgba(63, 34, 94, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-        box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
-        -webkit-backdrop-filter: blur(10px);
-        animation: glass-card-in 0.8s ease-out forwards;
-    }
     
-    @keyframes glass-card-in {
-      from {
-        opacity: 0;
-        transform: translateY(20px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+    .small-button {
+      max-width: 200px;
     }
 
-    .glass-effect.button {
-      background-color: rgba(61, 61, 61, 0.4);
-    }
-    
     /* Modal styles */
     .modal {
         display: none;
@@ -585,16 +506,16 @@
   </style>
 </head>
 
-<body>
-  <div id="app-container">
-    <header id="app-header">
-      <h1>Greve Draculas Träningslogg</h1>
+<body class="bg-[var(--bg-color)]">
+  <div id="app-container" class="w-full max-w-xl mx-auto rounded-2xl shadow-2xl p-6 md:p-8 bg-[var(--container-bg-color)]">
+    <header id="app-header" class="mb-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-[var(--header-color)] mb-1 text-shadow-md">Greve Draculas Träningslogg</h1>
     </header>
     
     <div id="login-container" class="card flex flex-col items-center justify-center text-center">
       <img src="greve_dracula.jpg" alt="Greve Dracula" class="dracula-image" onerror="this.onerror=null;this.src='https://placehold.co/150x150/2a1443/a879e6?text=DRACULA';">
-      <div class="space-y-4 w-full">
-        <button id="anonymous-sign-in-button" class="button-primary w-full">
+      <div class="space-y-4 w-full flex justify-center">
+        <button id="anonymous-sign-in-button" class="button-primary px-12 py-3 rounded-full font-medium">
           Fortsätt
         </button>
       </div>
@@ -604,68 +525,72 @@
       
       <div class="card glass-effect">
         <h3>Ny inmatning</h3>
-        <div class="input-group">
-          <select id="exercise-select" class="input-field"></select>
-          <div class="input-grid">
-            <div class="input-item">
-              <label for="date-input">Datum</label>
-              <input type="date" id="date-input" class="input-field" required>
+        <div class="flex flex-col gap-4 items-center">
+          <div class="w-full">
+            <label for="exercise-select" class="text-gray-400 text-sm font-semibold">Övning</label>
+            <select id="exercise-select" class="input-field w-full"></select>
+          </div>
+          <div class="grid grid-cols-2 gap-4 w-full md:grid-cols-4">
+            <div class="flex flex-col gap-1 items-center">
+              <label for="date-input" class="text-gray-400 text-sm font-semibold">Datum</label>
+              <!-- Fix: Ändrade typen från "date" till "text" för att kontrollera formatet -->
+              <input type="text" id="date-input" class="input-field" placeholder="mm-dd" required>
             </div>
-            <div class="input-item">
-              <label for="sets-input">Sets</label>
+            <div class="flex flex-col gap-1 items-center">
+              <label for="sets-input" class="text-gray-400 text-sm font-semibold">Sets</label>
               <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1">
             </div>
-            <div class="input-item">
-              <label for="reps-input">Reps</label>
+            <div class="flex flex-col gap-1 items-center">
+              <label for="reps-input" class="text-gray-400 text-sm font-semibold">Reps</label>
               <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1">
             </div>
-            <div class="input-item">
-              <label for="weight-input">Vikt (kg)</label>
+            <div class="flex flex-col gap-1 items-center">
+              <label for="weight-input" class="text-gray-400 text-sm font-semibold">Vikt (kg)</label>
               <input type="number" inputmode="decimal" id="weight-input" class="input-field" min="0.1" step="0.1">
             </div>
-            <div class="save-button-container">
-              <button id="save-button" class="button-primary" style="width:50%;">Spara</button>
-            </div>
+          </div>
+          <div class="w-full mt-2 flex justify-center">
+            <button id="save-button" class="button-primary px-8 py-3 rounded-full font-medium">Spara</button>
           </div>
         </div>
         <div id="status-message" class="status-message"></div>
       </div>
       <details id="manage-exercises-details" class="card glass-effect">
         <summary>Hantera Övningar</summary>
-        <div class="input-group">
-          <div style="display:flex;gap:1rem;width:100%;margin-top:.25rem;">
-            <input type="text" id="new-exercise-input" placeholder="Lägg till ny övning" class="input-field">
-            <button id="add-exercise-button" class="button-primary" style="width:auto;padding:.75rem 1rem;">Lägg till</button>
+        <div class="flex flex-col gap-4">
+          <div class="flex w-full mt-1">
+            <input type="text" id="new-exercise-input" placeholder="Lägg till ny övning" class="input-field mr-2 flex-grow">
+            <button id="add-exercise-button" class="button-primary px-4 py-2">Lägg till</button>
           </div>
-          <div id="exercise-list" class="exercise-list-container"></div>
+          <div id="exercise-list" class="flex flex-wrap gap-2 mt-4"></div>
         </div>
       </details>
       <div id="history-card" class="card glass-effect">
         <h3>Träningshistorik</h3>
-        <div id="table-container" style="overflow-x:hidden;">
+        <div id="table-container" class="overflow-x-auto">
           <table class="styled-table">
             <thead id="table-head"></thead>
             <tbody id="table-body"></tbody>
           </table>
         </div>
-        <div id="data-list-empty-message" style="text-align:center;color:#9ca3af;margin-top:1rem;display:none;">Ingen data sparad ännu.</div>
+        <div id="data-list-empty-message" class="text-center text-gray-400 mt-4 hidden">Ingen data sparad ännu.</div>
       </div>
       <div id="progress-card" class="card glass-effect">
         <h3>Viktutveckling</h3>
         <div id="chart-container">
           <canvas id="weight-chart"></canvas>
-          <div id="chart-empty-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#9ca3af;text-align:center;">Ingen data att visa.</div>
+          <div id="chart-empty-message" class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-gray-400 text-center">Ingen data att visa.</div>
         </div>
       </div>
     </div>
-    <div id="auth-container">
+    <div id="auth-container" class="text-center mt-4 text-gray-400 text-xs flex flex-col items-center gap-2">
       <p id="current-user-id-display"></p>
     </div>
   </div>
   <div id="loading-modal" class="modal">
     <div class="modal-content glass-effect">
       <div class="loading-spinner"></div>
-      <p style="margin-top:1rem; margin-bottom:0.5rem; color:var(--text-color);">Arbetar hårt i kryptan...</p>
+      <p class="mt-4 mb-2 text-[var(--text-color)]">Arbetar hårt i kryptan...</p>
     </div>
   </div>
 
@@ -673,7 +598,7 @@
     <div class="modal-content glass-effect">
       <h4 id="output-modal-title"></h4>
       <div id="output-modal-content"></div>
-      <button id="close-modal-button" class="button-gemini" style="width:100%;">Stäng</button>
+      <button id="close-modal-button" class="button-gemini w-full">Stäng</button>
     </div>
   </div>
 
@@ -745,6 +670,13 @@
         let myChart = null;
         let unsubscribeExercises = null;
         let unsubscribeWorkouts = null;
+        
+        const formatDate = (date) => {
+          const d = new Date(date);
+          const month = (d.getMonth() + 1).toString().padStart(2, '0');
+          const day = d.getDate().toString().padStart(2, '0');
+          return `${month}-${day}`;
+        };
 
         const renderExercises = (exercises) => {
           exerciseSelect.innerHTML = '';
@@ -753,7 +685,7 @@
           exercises.forEach(ex => {
             const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
             exerciseSelect.innerHTML += `<option data-id="${ex.id}" value="${ex.name}">${displayedName}</option>`;
-            exerciseListDiv.innerHTML += `<div class="exercise-tag" id="ex-${ex.id}"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
+            exerciseListDiv.innerHTML += `<div class="exercise-tag" id="ex-${ex.id}"><span>${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
           });
         };
 
@@ -800,7 +732,7 @@
           myChart = new Chart(weightChart, {
             type: 'line',
             data: {
-              labels: dates,
+              labels: dates.map(d => formatDate(d)),
               datasets
             },
             options: {
@@ -855,7 +787,7 @@
           } else {
             tableContainer.style.display = 'block';
             sortedData.forEach(item => {
-              const dateStr = new Date(item.timestamp).toLocaleDateString('sv-SE');
+              const dateStr = formatDate(item.timestamp);
               const row = document.createElement('tr');
               row.innerHTML = `
                 <td>${dateStr}</td>
@@ -890,8 +822,10 @@
                 return false;
             }
 
-            if (!dateInput.value) {
-                showMessageModal('Inmatningsfel', 'Vänligen välj ett datum.');
+            // Fix: Kontrollera att datumformatet är korrekt (mm-dd)
+            const dateRegex = /^(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$/;
+            if (!dateRegex.test(dateInput.value)) {
+                showMessageModal('Inmatningsfel', 'Vänligen ange datum i formatet mm-dd.');
                 return false;
             }
 
@@ -955,11 +889,13 @@
           }
 
           const exercise = exerciseSelect.value;
-          const date = dateInput.value;
+          const dateStr = dateInput.value;
+          const [month, day] = dateStr.split('-');
+          // Fix: Skapa ett Date-objekt med det aktuella året
+          const timestamp = new Date(new Date().getFullYear(), month - 1, day).getTime();
           const sets = setsInput.value ? parseInt(setsInput.value) : null;
           const reps = repsInput.value ? parseInt(repsInput.value) : null;
           const weight = weightInput.value ? parseFloat(weightInput.value) : null;
-          const timestamp = new Date(date).getTime();
 
           try {
             await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
@@ -1038,7 +974,11 @@
           mainContent.classList.remove('hidden');
           currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
 
-          dateInput.valueAsDate = new Date();
+          const today = new Date();
+          const month = (today.getMonth() + 1).toString().padStart(2, '0');
+          const day = today.getDate().toString().padStart(2, '0');
+          // Fix: Sätt datumfältets värde till mm-dd
+          dateInput.value = `${month}-${day}`;
 
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
@@ -1072,10 +1012,15 @@
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             const userId = user.uid;
-            loginContainer.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            initializeAppLogic(db, userId, firebaseConfig);
+            // Lägg till en kort fördröjning för att visa fade-effekten
+            setTimeout(() => {
+              loginContainer.style.animation = 'fadeOut 0.3s ease-in-out forwards';
+              mainContent.classList.remove('hidden');
+              mainContent.style.animation = 'fadeIn 0.5s ease-out forwards';
+              initializeAppLogic(db, userId, firebaseConfig);
+            }, 300);
           } else {
+            loginContainer.style.animation = 'fadeIn 0.5s ease-out forwards';
             loginContainer.classList.remove('hidden');
             mainContent.classList.add('hidden');
             currentUserIdDisplay.textContent = ``;
