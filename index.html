@@ -971,6 +971,8 @@
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             const userId = user.uid;
+            loginContainer.classList.add('hidden');
+            mainContent.classList.remove('hidden');
             initializeAppLogic(db, userId, firebaseConfig);
           } else {
             loginContainer.classList.remove('hidden');
