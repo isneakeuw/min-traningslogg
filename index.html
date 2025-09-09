@@ -128,6 +128,7 @@
       border: 2px solid transparent;
       box-sizing: border-box;
       text-align: center;
+      font-size: 16px; /* Förhindrar automatisk zoom på mobiler */
     }
 
     #exercise-select,
@@ -307,12 +308,35 @@
       margin-top: 1rem;
       color: #9ca3af;
       font-size: .75rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .5rem;
     }
 
     #current-user-id-display {
       word-break: break-all;
+      margin-bottom: .5rem;
     }
     
+    .auth-button {
+      background-color: #4285F4;
+      color: white;
+      padding: .75rem 1rem;
+      border-radius: .5rem;
+      cursor: pointer;
+      font-weight: bold;
+      border: none;
+      transition: background-color 0.3s;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .auth-button:hover {
+      background-color: #357ae8;
+    }
+
     /* Modal styles */
     .modal {
         display: none; 
@@ -425,6 +449,18 @@
       </div>
     </div>
     <div id="auth-container">
+      <div id="auth-ui">
+        <button id="google-sign-in-button" class="auth-button">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.636,4.524-5.694,7.766-10.437,7.766c-6.4,0-11.608-5.208-11.608-11.608 c0-6.4,5.208-11.608,11.608-11.608c3.41,0,6.505,1.442,8.681,3.771l5.448-5.448C36.65,6.517,31.296,4,24,4 C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20L43.611,20.083z"/>
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,19.986,12,24,12c5.056,0,9.458,2.783,11.838,6.864 l5.448-5.448C36.65,6.517,31.296,4,24,4C16.318,4,9.656,7.243,6.306,14.691z"/>
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.986-1.979,13.623-5.597l-5.448-5.448c-2.029,2.964-5.267,4.787-8.175,4.787 c-5.06,0-9.35-3.093-11.396-7.536l-6.57,4.819C9.656,40.757,16.318,44,24,44z"/>
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.14-4.137,5.578v0.001l5.448,5.448 C41.655,36.57,44,30.857,44,24C44,22.61,43.893,21.328,43.611,20.083z"/>
+          </svg>
+          Logga in med Google
+        </button>
+        <button id="sign-out-button" class="button-primary hidden">Logga ut</button>
+      </div>
       <p id="current-user-id-display"></p>
     </div>
   </div>
@@ -443,13 +479,14 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
     const setupApp = async () => {
       setLogLevel('debug');
       let workoutData = [];
+      let exercisesExist = false;
 
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
       const firebaseConfig = {
@@ -467,12 +504,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
-        if (typeof __initial_auth_token !== 'undefined') {
-            await signInWithCustomToken(auth, __initial_auth_token);
-        } else {
-            await signInAnonymously(auth);
-        }
-      
         const exerciseSelect = document.getElementById('exercise-select');
         const weekInput = document.getElementById('week-input');
         const pastWeeksSelect = document.getElementById('past-weeks-select');
@@ -495,9 +526,12 @@
         const modal = document.getElementById('modal');
         const modalYesButton = document.getElementById('modal-yes-button');
         const modalNoButton = document.getElementById('modal-no-button');
-        let hasBeenAskedForExercises = false;
-        
+        const googleSignInButton = document.getElementById('google-sign-in-button');
+        const signOutButton = document.getElementById('sign-out-button');
+        const mainContent = document.getElementById('main-content');
+
         let myChart = null;
+        let isGoogleSignInHandled = false;
 
         const getWeekNumber = date => {
           const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -507,9 +541,10 @@
           return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         };
 
-        const renderExercises = (exercises, firstLoad = false) => {
+        const renderExercises = (exercises) => {
             exerciseSelect.innerHTML = '';
             exerciseListDiv.innerHTML = '';
+            exercisesExist = exercises.length > 0;
 
             exercises.sort((a, b) => a.name.localeCompare(b.name));
             exercises.forEach(ex => {
@@ -517,19 +552,13 @@
                 exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
                 exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
             });
-            
-            // Show modal if it's the first time and no exercises exist
-            if (firstLoad && exercises.length === 0 && !hasBeenAskedForExercises) {
-                modal.style.display = 'block';
-                hasBeenAskedForExercises = true;
-            }
         };
 
-        const addDefaultExercises = async () => {
+        const addDefaultExercises = async (userId, config) => {
           const defaultExercises = ["Bänkpress", "Chins", "Knäböj", "Marklyft", "Militärpress", "Skivstångsrodd"];
           try {
             const addPromises = defaultExercises.map(name =>
-              addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name })
+              addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name })
             );
             await Promise.all(addPromises);
             modal.style.display = 'none';
@@ -738,7 +767,7 @@
               [setsInput, repsInput, weightInput].forEach(i => i.value = '');
             } catch (e) {
               console.error("Fel vid spara data:", e);
-              showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
+              showStatusMessage("Kunde inte spara data. Försök igen.", "error");
             }
           });
 
@@ -763,19 +792,8 @@
               showStatusMessage("Övning tillagd!", 'success');
             } catch (e) {
               console.error("Fel vid tillägg av övning:", e);
-              showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
+              showStatusMessage("Kunde inte lägga till övning. Försök igen.", "error");
             }
-          });
-          
-          manageExercisesDetails.addEventListener('toggle', async () => {
-              if (manageExercisesDetails.open) {
-                  const exercisesQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`));
-                  const querySnapshot = await getDocs(exercisesQuery);
-                  if (querySnapshot.empty && !hasBeenAskedForExercises) {
-                      modal.style.display = 'block';
-                      hasBeenAskedForExercises = true;
-                  }
-              }
           });
 
           // Eventdelegation för klick på dynamiska övningstaggar
@@ -792,10 +810,10 @@
                 const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, workoutDoc.id)));
                 await Promise.all(deletePromises);
                 await deleteDoc(exerciseDocRef);
-                showStatusMessage("Övning och all associerad data borttagen!", 'success');
+                showStatusMessage("Övning och all associerad data borttagen!", "success");
               } catch (e) {
                 console.error("Fel vid borttagning av övning och data:", e);
-                showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
+                showStatusMessage("Kunde inte ta bort data. Försök igen.", "error");
               }
             }
           });
@@ -806,16 +824,16 @@
               const docId = e.target.dataset.id;
               try {
                 await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, docId));
-                showStatusMessage("Inmatning borttagen!", 'success');
+                showStatusMessage("Inmatning borttagen!", "success");
               } catch (e) {
                 console.error("Fel vid borttagning av inmatning:", e);
-                showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
+                showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", "error");
               }
             }
           });
           
           modalYesButton.addEventListener('click', () => {
-              addDefaultExercises();
+              addDefaultExercises(userId, config);
           });
           
           modalNoButton.addEventListener('click', () => {
@@ -852,25 +870,68 @@
 
           onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
             const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderExercises(exercises, true);
+            renderExercises(exercises);
           });
 
           onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
             workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderAllData(workoutData);
           });
+          
+          manageExercisesDetails.addEventListener('toggle', () => {
+              if (manageExercisesDetails.open && !exercisesExist) {
+                  modal.style.display = 'block';
+              }
+          });
         };
         
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                const userId = user.uid;
-                currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
-                initializeAppLogic(db, userId, firebaseConfig);
+                googleSignInButton.classList.add('hidden');
+                signOutButton.classList.remove('hidden');
+                mainContent.classList.remove('hidden');
+                currentUserIdDisplay.textContent = user.email ? `Inloggad som: ${user.email}` : `Ditt användar-ID: ${user.uid}`;
+                initializeAppLogic(db, user.uid, firebaseConfig);
+            } else {
+                googleSignInButton.classList.remove('hidden');
+                signOutButton.classList.add('hidden');
+                mainContent.classList.add('hidden');
+                currentUserIdDisplay.textContent = 'Du är inte inloggad.';
+                if (typeof __initial_auth_token !== 'undefined' && !isGoogleSignInHandled) {
+                    signInWithCustomToken(auth, __initial_auth_token).catch(e => {
+                        console.error("Anonym inloggning misslyckades:", e);
+                        signInAnonymously(auth);
+                    });
+                } else if (!isGoogleSignInHandled) {
+                    signInAnonymously(auth);
+                }
             }
         });
 
+        googleSignInButton.addEventListener('click', async () => {
+          isGoogleSignInHandled = true;
+          const provider = new GoogleAuthProvider();
+          try {
+            await signInWithPopup(auth, provider);
+          } catch (error) {
+            console.error("Google-inloggning misslyckades:", error);
+            showStatusMessage("Google-inloggning misslyckades. Försök igen.", "error");
+          }
+        });
+
+        signOutButton.addEventListener('click', async () => {
+          try {
+            await signOut(auth);
+            showStatusMessage("Du är utloggad.", "success");
+            window.location.reload();
+          } catch (error) {
+            console.error("Utloggning misslyckades:", error);
+            showStatusMessage("Utloggning misslyckades.", "error");
+          }
+        });
+
       } catch (e) {
-        console.error("Initialization failed:", e);
+        console.error("Initialisering misslyckades:", e);
       }
     };
 
