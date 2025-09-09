@@ -654,6 +654,7 @@
         let myChart = null;
         let unsubscribeExercises = null;
         let unsubscribeWorkouts = null;
+        let initialDataLoaded = false;
 
         const getWeekNumber = date => {
           const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -839,7 +840,6 @@
           try {
             // Anonym inloggning
             await signInAnonymously(auth);
-            hideModal('loading-modal');
           } catch (e) {
             hideModal('loading-modal');
             showMessageModal('Inloggning misslyckades', 'Kunde inte logga in anonymt. Försök igen.');
@@ -854,7 +854,6 @@
             // Ställer in uthållighet för sessionen innan inloggning
             await setPersistence(auth, browserSessionPersistence);
             await signInWithPopup(auth, provider);
-            hideModal('loading-modal');
           } catch (e) {
             hideModal('loading-modal');
             showMessageModal('Inloggning misslyckades', 'Kunde inte logga in med Google. Försök igen.');
@@ -866,7 +865,6 @@
           showModal('loading-modal');
           try {
             await signOut(auth);
-            hideModal('loading-modal');
           } catch (e) {
             hideModal('loading-modal');
             showMessageModal('Utloggning misslyckades', 'Kunde inte logga ut. Försök igen.');
@@ -969,12 +967,12 @@
           mainContent.classList.remove('hidden');
           logoutButton.classList.remove('hidden');
           currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
-
           weekInput.value = getWeekNumber(new Date());
 
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
 
+          // Lägg till en engångshämtning av övningar först
           const exercisesRef = collection(db, `artifacts/${appId}/users/${userId}/exercises`);
           const existingExercises = await getDocs(exercisesRef);
           if (existingExercises.empty) {
@@ -984,16 +982,23 @@
             }
           }
           
+          // Sedan sätter vi upp listeners för realtidsuppdateringar
           unsubscribeExercises = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/exercises`), snapshot => {
             const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderExercises(exercises);
+            
+            // Kolla om initialdata har laddats, om inte, fortsätt med workouts
+            if (!initialDataLoaded) {
+              unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/workouts`), snapshot => {
+                workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAllData(workoutData);
+                // När workouts har laddats, dölj laddningsmodalen
+                hideModal('loading-modal');
+                initialDataLoaded = true;
+              });
+            }
           });
-
-          unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/workouts`), snapshot => {
-            workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderAllData(workoutData);
-          });
-
+          
           const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
           workoutInputFields.forEach(field => {
             field.addEventListener('change', closeManageExercises);
@@ -1001,19 +1006,24 @@
           });
         };
         
+        // Här väntar vi på autentiseringstillståndet innan vi visar något innehåll
         onAuthStateChanged(auth, async (user) => {
           if (user) {
             const userId = user.uid;
+            showModal('loading-modal'); // Visa laddningsindikator
             initializeAppLogic(db, userId, firebaseConfig);
           } else {
+            hideModal('loading-modal');
             loginContainer.classList.remove('hidden');
             mainContent.classList.add('hidden');
             logoutButton.classList.add('hidden');
             currentUserIdDisplay.textContent = ``;
+            initialDataLoaded = false;
           }
         });
 
       } catch (e) {
+        hideModal('loading-modal');
         console.error("Initialization failed:", e);
         showMessageModal('Fel', 'Kunde inte starta appen. Kontrollera konsolen för detaljer.');
       }
