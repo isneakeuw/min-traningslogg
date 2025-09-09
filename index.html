@@ -280,11 +280,6 @@
       text-align: center;
     }
 
-    .styled-table th:first-child,
-    .styled-table td:first-child {
-      text-align: left;
-    }
-
     .styled-table thead th {
       background-color: var(--card-bg-color);
       color: var(--neon-lila);
@@ -299,30 +294,39 @@
       border-top-right-radius: .5rem;
     }
     
+    /* Justerade bredder för mobil */
     .styled-table th:nth-child(1),
-    .styled-table td:nth-child(1) {
-      width: 25%;
+    .styled-table td:nth-child(1) { /* Datum */
+      width: 20%;
+      text-align: left; /* Datum ser bättre ut vänsterjusterat */
+      font-size: 0.75rem; /* Mindre text för att spara utrymme */
     }
     
     .styled-table th:nth-child(2),
-    .styled-table td:nth-child(2) {
-      width: 30%;
-      word-break: break-word;
+    .styled-table td:nth-child(2) { /* Övning */
+      width: 25%;
+      word-break: break-word; /* Bryter ord för långa namn */
+      font-size: 0.75rem; /* Mindre text för att spara utrymme */
     }
     
     .styled-table th:nth-child(3),
-    .styled-table td:nth-child(3) {
+    .styled-table td:nth-child(3) { /* Sets */
       width: 15%;
     }
     
     .styled-table th:nth-child(4),
-    .styled-table td:nth-child(4) {
+    .styled-table td:nth-child(4) { /* Reps */
       width: 15%;
     }
     
     .styled-table th:nth-child(5),
-    .styled-table td:nth-child(5) {
+    .styled-table td:nth-child(5) { /* Vikt (kg) */
       width: 15%;
+    }
+
+    .styled-table th:last-child,
+    .styled-table td:last-child { /* X-knapp */
+      width: 10%;
     }
     
     .styled-table tbody tr:hover {
