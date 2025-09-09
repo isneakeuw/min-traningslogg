@@ -412,7 +412,7 @@
       // Sätt Firebase-loggnivån till Debug för att se detaljerade felmeddelanden i konsolen.
       setLogLevel('debug');
 
-      // Firebase-konfigurationen har flyttats hit för att den ska fungera utanför Gemini-miljön.
+      // Här är fixen för felet "Illegal string literal" – alla strängar har nu citationstecken.
       const firebaseConfig = {
         apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
         authDomain: "traningslogg-a271a.firebaseapp.com",
@@ -738,7 +738,6 @@
                   await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${currentUserId}/workouts`, docId));
                   showStatusMessage("Inmatning borttagen!", 'success');
                 } catch (e) {
-233513
                   console.error("Fel vid borttagning av inmatning:", e);
                   showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
                 }
