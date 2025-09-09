@@ -309,21 +309,51 @@
       font-size: .75rem;
     }
 
-    #user-id-input-container {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
-      margin-top: 1.5rem;
-      text-align: center;
+    #current-user-id-display {
+      word-break: break-all;
+    }
+    
+    /* Modal styles */
+    .modal {
+        display: none; 
+        position: fixed; 
+        z-index: 1000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        overflow: auto; 
+        background-color: rgba(0,0,0,0.6); 
+        padding-top: 150px;
     }
 
-    #user-id-input-container>input {
-      text-align: center;
+    .modal-content {
+        background-color: var(--container-bg-color);
+        margin: auto;
+        padding: 2rem;
+        border-radius: 1rem;
+        border: 1px solid var(--border-color);
+        width: 80%;
+        max-width: 400px;
+        text-align: center;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     }
 
-    #user-id-input-container>button {
-      width: fit-content;
-      align-self: center;
+    .modal-content h4 {
+        margin-top: 0;
+        color: var(--header-color);
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .modal-content p {
+        margin-bottom: 2rem;
+    }
+
+    .modal-buttons {
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
     }
   </style>
 </head>
@@ -398,6 +428,18 @@
       <p id="current-user-id-display"></p>
     </div>
   </div>
+  
+  <div id="modal" class="modal">
+    <div class="modal-content">
+      <h4>Vill du lägga till standardövningar?</h4>
+      <p>Vill du lägga till de sex vanligaste basövningarna: Bänkpress, Chins, Knäböj, Marklyft, Militärpress och Skivstångsrodd?</p>
+      <div class="modal-buttons">
+        <button id="modal-yes-button" class="button-primary">Ja</button>
+        <button id="modal-no-button" class="button-primary" style="background-color: var(--danger-color);">Nej</button>
+      </div>
+    </div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
@@ -450,6 +492,10 @@
         const chartEmptyMessage = document.getElementById('chart-empty-message');
         const manageExercisesDetails = document.getElementById('manage-exercises-details');
         const currentUserIdDisplay = document.getElementById('current-user-id-display');
+        const modal = document.getElementById('modal');
+        const modalYesButton = document.getElementById('modal-yes-button');
+        const modalNoButton = document.getElementById('modal-no-button');
+        let hasBeenAskedForExercises = false;
         
         let myChart = null;
 
@@ -461,25 +507,37 @@
           return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         };
 
-        const renderExercises = exercises => {
-          exerciseSelect.innerHTML = '';
-          exerciseListDiv.innerHTML = '';
-          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
-          if (exercises.length === 0) {
-            defaultExercises.forEach(async name => {
-              try {
-                await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name });
-              } catch (e) {
-                console.error("Fel vid tillägg av standardövning:", e);
-              }
+        const renderExercises = (exercises, firstLoad = false) => {
+            exerciseSelect.innerHTML = '';
+            exerciseListDiv.innerHTML = '';
+
+            exercises.sort((a, b) => a.name.localeCompare(b.name));
+            exercises.forEach(ex => {
+                const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
+                exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
+                exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
             });
+            
+            // Show modal if it's the first time and no exercises exist
+            if (firstLoad && exercises.length === 0 && !hasBeenAskedForExercises) {
+                modal.style.display = 'block';
+                hasBeenAskedForExercises = true;
+            }
+        };
+
+        const addDefaultExercises = async () => {
+          const defaultExercises = ["Bänkpress", "Chins", "Knäböj", "Marklyft", "Militärpress", "Skivstångsrodd"];
+          try {
+            const addPromises = defaultExercises.map(name =>
+              addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name })
+            );
+            await Promise.all(addPromises);
+            modal.style.display = 'none';
+            showStatusMessage("Standardövningar tillagda!", "success");
+          } catch (e) {
+            console.error("Fel vid tillägg av standardövningar:", e);
+            showStatusMessage("Kunde inte lägga till standardövningar. Försök igen.", "error");
           }
-          exercises.sort((a, b) => a.name.localeCompare(b.name));
-          exercises.forEach(ex => {
-            const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
-            exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
-            exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
-          });
         };
 
         const renderAllData = data => {
@@ -646,6 +704,10 @@
             manageExercisesDetails.open = false;
           }
         };
+        
+        const closeModals = () => {
+            modal.style.display = 'none';
+        }
 
         // Här sätts all app-logik upp efter att en användare har loggats in
         const initializeAppLogic = (db, userId, config) => {
@@ -704,6 +766,17 @@
               showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
             }
           });
+          
+          manageExercisesDetails.addEventListener('toggle', async () => {
+              if (manageExercisesDetails.open) {
+                  const exercisesQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`));
+                  const querySnapshot = await getDocs(exercisesQuery);
+                  if (querySnapshot.empty && !hasBeenAskedForExercises) {
+                      modal.style.display = 'block';
+                      hasBeenAskedForExercises = true;
+                  }
+              }
+          });
 
           // Eventdelegation för klick på dynamiska övningstaggar
           exerciseListDiv.addEventListener('click', async e => {
@@ -740,6 +813,14 @@
               }
             }
           });
+          
+          modalYesButton.addEventListener('click', () => {
+              addDefaultExercises();
+          });
+          
+          modalNoButton.addEventListener('click', () => {
+              closeModals();
+          });
 
           pastWeeksSelect.addEventListener('change', () => {
             renderWorkoutData(workoutData);
@@ -761,8 +842,9 @@
           });
 
           document.addEventListener('click', event => {
-            if (!manageExercisesDetails.contains(event.target)) {
+            if (!manageExercisesDetails.contains(event.target) && !modal.contains(event.target)) {
               closeManageExercises();
+              closeModals();
             }
           });
           
@@ -770,7 +852,7 @@
 
           onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
             const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderExercises(exercises);
+            renderExercises(exercises, true);
           });
 
           onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
