@@ -272,7 +272,7 @@
       font-size: .875rem;
       table-layout: fixed;
     }
-
+    
     .styled-table th,
     .styled-table td {
       padding: .5rem .75rem;
@@ -283,7 +283,6 @@
     .styled-table th:first-child,
     .styled-table td:first-child {
       text-align: left;
-      width: 20%;
     }
 
     .styled-table thead th {
@@ -300,12 +299,32 @@
       border-top-right-radius: .5rem;
     }
     
+    .styled-table th:nth-child(1),
+    .styled-table td:nth-child(1) {
+      width: 25%;
+    }
+    
     .styled-table th:nth-child(2),
     .styled-table td:nth-child(2) {
-      width: 20%;
+      width: 30%;
       word-break: break-word;
     }
-
+    
+    .styled-table th:nth-child(3),
+    .styled-table td:nth-child(3) {
+      width: 15%;
+    }
+    
+    .styled-table th:nth-child(4),
+    .styled-table td:nth-child(4) {
+      width: 15%;
+    }
+    
+    .styled-table th:nth-child(5),
+    .styled-table td:nth-child(5) {
+      width: 15%;
+    }
+    
     .styled-table tbody tr:hover {
       background-color: rgba(62, 62, 62, 0.5);
     }
@@ -585,15 +604,15 @@
             </div>
             <div class="input-item">
               <label for="sets-input">Sets</label>
-              <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1" maxlength="4">
+              <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1">
             </div>
             <div class="input-item">
               <label for="reps-input">Reps</label>
-              <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1" maxlength="4">
+              <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1">
             </div>
             <div class="input-item">
               <label for="weight-input">Vikt (kg)</label>
-              <input type="number" inputmode="decimal" id="weight-input" class="input-field" min="0.1" step="0.1" maxlength="4">
+              <input type="number" inputmode="decimal" id="weight-input" class="input-field" min="0.1" step="0.1">
             </div>
             <div class="save-button-container">
               <button id="save-button" class="button-primary" style="width:50%;">Spara</button>
@@ -614,7 +633,7 @@
       </details>
       <div id="history-card" class="card glass-effect">
         <h3>Träningshistorik</h3>
-        <div id="table-container" style="overflow-x:auto;">
+        <div id="table-container" style="overflow-x:hidden;">
           <table class="styled-table">
             <thead id="table-head"></thead>
             <tbody id="table-body"></tbody>
