@@ -480,8 +480,8 @@
     
     <!-- Login Section -->
     <div id="login-container" class="card flex flex-col items-center justify-center text-center">
-      <!-- Uppdaterad bild-URL som alltid fungerar -->
-      <img src="https://placehold.co/150x150/2a1443/a879e6?text=DRACULA" alt="Greve Dracula" class="dracula-image">
+      <!-- Uppdaterad bild-URL för att peka på den lokala filen -->
+      <img src="greve_dracula.jpg" alt="Greve Dracula" class="dracula-image" onerror="this.onerror=null;this.src='https://placehold.co/150x150/2a1443/a879e6?text=DRACULA';">
       <h3 class="mb-4">Logga in för att spara din data</h3>
       <div class="space-y-4 w-full">
         <button id="google-sign-in-button" class="auth-button w-full">
@@ -625,10 +625,6 @@
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
-        
-        // --- Notera: För Google-inloggning måste du också aktivera Google som inloggningsmetod i ditt Firebase-projekt.
-        // Gå till Firebase-konsolen > Authentication > Sign-in method > Enable Google.
-        // ---
         
         const mainContent = document.getElementById('main-content');
         const loginContainer = document.getElementById('login-container');
