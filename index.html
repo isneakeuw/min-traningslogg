@@ -1,0 +1,797 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Träningslogg</title>
+  <style>
+    :root {
+      --bg-color: #212121;
+      --container-bg-color: #2e2e2e;
+      --card-bg-color: #333;
+      --text-color: #e0e0e0;
+      --header-color: #d1e2f8;
+      --accent-color: #5cb85c;
+      --accent-hover-color: #4a904a;
+      --danger-color: #ef4444;
+      --border-color: #333;
+    }
+
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23333333' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zm1 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    @media (min-width: 640px) {
+      body {
+        padding: 2rem;
+      }
+    }
+
+    #app-container {
+      width: 100%;
+      max-width: 32rem;
+      background-color: var(--container-bg-color);
+      border-radius: 1rem;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      padding: 1.5rem;
+    }
+
+    @media (min-width: 640px) {
+      #app-container {
+        padding: 2rem;
+      }
+    }
+
+    #app-header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    #app-header h1 {
+      font-size: 1.875rem;
+      font-weight: 700;
+      color: var(--header-color);
+      margin-bottom: .25rem;
+    }
+
+    @media (min-width: 640px) {
+      #app-header h1 {
+        font-size: 2.25rem;
+      }
+    }
+
+    .card {
+      background-color: var(--card-bg-color);
+      padding: 1.25rem;
+      border-radius: .75rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .card h3 {
+      font-size: 1.125rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--header-color);
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      align-items: center;
+    }
+
+    .input-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1rem;
+      width: 100%;
+    }
+
+    @media (min-width: 640px) {
+      .input-grid {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+      }
+    }
+
+    .input-item {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+      align-items: center;
+    }
+
+    .input-item label {
+      color: #9ca3af;
+      font-size: .875rem;
+      font-weight: 600;
+    }
+
+    .input-field {
+      background-color: var(--bg-color);
+      color: white;
+      padding: .75rem;
+      border-radius: .5rem;
+      width: 100%;
+      outline: none;
+      border: 2px solid transparent;
+      box-sizing: border-box;
+      text-align: center;
+    }
+
+    #exercise-select,
+    #past-weeks-select {
+      max-width: 15rem;
+    }
+
+    .input-field:focus {
+      border-color: var(--accent-color);
+    }
+
+    button {
+      transition: all .3s ease;
+      font-weight: 700;
+      padding: .75rem 1rem;
+      border-radius: .75rem;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    .button-primary {
+      background-color: var(--accent-color);
+    }
+
+    .button-primary:hover {
+      background-color: var(--accent-hover-color);
+    }
+
+    .status-message {
+      text-align: center;
+      margin-top: 1rem;
+      height: 1.5rem;
+    }
+
+    .status-message.success {
+      color: #4ade80;
+    }
+
+    .status-message.error {
+      color: var(--danger-color);
+    }
+
+    details>summary {
+      list-style: none;
+      cursor: pointer;
+    }
+
+    details>summary::-webkit-details-marker {
+      display: none;
+    }
+
+    details>summary::before {
+      content: "►";
+      float: left;
+      margin-right: .5rem;
+      transition: transform .2s ease;
+    }
+
+    details[open]>summary::before {
+      transform: rotate(90deg);
+    }
+
+    .exercise-list-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: .5rem;
+      margin-top: 1rem;
+    }
+
+    .exercise-tag {
+      display: inline-flex;
+      align-items: center;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      padding: .25rem .75rem;
+      border-radius: 9999px;
+      font-size: .875rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .exercise-tag-remove {
+      background-color: transparent;
+      color: var(--text-color);
+      border: none;
+      margin-left: .25rem;
+      font-size: 1.1rem;
+      padding: .5rem;
+      cursor: pointer;
+      line-height: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .delete-entry-button {
+      background-color: transparent;
+      color: var(--danger-color);
+      font-size: 1rem;
+      font-weight: 700;
+      padding: .2rem .4rem;
+      border: none;
+    }
+
+    .styled-table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: .875rem;
+    }
+
+    .styled-table th,
+    .styled-table td {
+      padding: .5rem .75rem;
+      border: 1px solid var(--border-color);
+      text-align: center;
+    }
+
+    .styled-table th:first-child,
+    .styled-table td:first-child {
+      text-align: left;
+    }
+
+    .styled-table thead th {
+      background-color: var(--card-bg-color);
+      color: var(--header-color);
+      font-weight: 700;
+    }
+
+    .styled-table thead th:first-child {
+      border-top-left-radius: .5rem;
+    }
+
+    .styled-table thead th:last-child {
+      border-top-right-radius: .5rem;
+    }
+
+    .styled-table tbody tr:hover {
+      background-color: rgba(51, 51, 51, 0.5);
+    }
+
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button {
+      -webkit-appearance: none;
+      margin: 0;
+    }
+
+    input[type="number"] {
+      -moz-appearance: textfield;
+    }
+
+    .save-button-container {
+      grid-column: 1 / -1;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-top: .5rem;
+    }
+
+    #chart-container {
+      position: relative;
+      height: 250px;
+      width: 100%;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    #new-exercise-input {
+      height: calc(.75rem * 2 + 2px + 1rem);
+    }
+
+    #auth-container {
+      text-align: center;
+      margin-top: 1rem;
+      color: #9ca3af;
+      font-size: .75rem;
+    }
+
+    #user-id-input-container {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+      margin-top: 1.5rem;
+      text-align: center;
+    }
+
+    #user-id-input-container>input {
+      text-align: center;
+    }
+
+    #user-id-input-container>button {
+      width: fit-content;
+      align-self: center;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app-container">
+    <header id="app-header">
+      <h1>Träningslogg</h1>
+    </header>
+    <div id="main-content">
+      <div class="card">
+        <h3>Ny inmatning</h3>
+        <div class="input-group">
+          <select id="exercise-select" class="input-field"></select>
+          <div class="input-grid">
+            <div class="input-item">
+              <label for="week-input">Vecka</label>
+              <input type="number" inputmode="numeric" id="week-input" class="input-field" min="1">
+            </div>
+            <div class="input-item">
+              <label for="sets-input">Sets</label>
+              <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1">
+            </div>
+            <div class="input-item">
+              <label for="reps-input">Reps</label>
+              <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1">
+            </div>
+            <div class="input-item">
+              <label for="weight-input">Vikt (kg)</label>
+              <input type="number" inputmode="decimal" id="weight-input" class="input-field" min="0.1" step="0.1">
+            </div>
+            <div class="save-button-container">
+              <button id="save-button" class="button-primary" style="width:50%;">Spara</button>
+            </div>
+          </div>
+        </div>
+        <div id="status-message" class="status-message"></div>
+      </div>
+      <details id="manage-exercises-details" class="card">
+        <summary>Hantera Övningar</summary>
+        <div class="input-group">
+          <div style="display:flex;gap:1rem;width:100%;margin-top:.25rem;">
+            <input type="text" id="new-exercise-input" placeholder="Lägg till ny övning" class="input-field">
+            <button id="add-exercise-button" class="button-primary" style="width:auto;padding:.75rem 1rem;">Lägg till</button>
+          </div>
+          <div id="exercise-list" class="exercise-list-container"></div>
+        </div>
+      </details>
+      <div id="history-card" class="card">
+        <h3>Träningshistorik</h3>
+        <div style="margin-bottom:1rem;">
+          <label for="past-weeks-select" style="color:#9ca3af;font-size:.875rem;font-weight:600;">Välj vecka att visa:</label>
+          <select id="past-weeks-select" class="input-field" style="margin-top:.5rem;"></select>
+        </div>
+        <div id="table-container" style="overflow-x:auto;">
+          <table class="styled-table">
+            <thead id="table-head"></thead>
+            <tbody id="table-body"></tbody>
+          </table>
+        </div>
+        <div id="data-list-empty-message" style="text-align:center;color:#9ca3af;margin-top:1rem;display:none;">Ingen data sparad ännu.</div>
+      </div>
+      <div id="progress-card" class="card">
+        <h3>Viktutveckling</h3>
+        <div id="chart-container">
+          <canvas id="weight-chart"></canvas>
+          <div id="chart-empty-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#9ca3af;text-align:center;">Ingen data att visa.</div>
+        </div>
+      </div>
+    </div>
+    <div id="auth-container">
+      <p id="current-user-id-display"></p>
+    </div>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const setupApp = async () => {
+      setLogLevel('debug');
+      let workoutData = [];
+
+      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID",
+      };
+
+      try {
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+        
+        if (typeof __initial_auth_token !== 'undefined') {
+            await signInWithCustomToken(auth, __initial_auth_token);
+        } else {
+            await signInAnonymously(auth);
+        }
+      
+        const exerciseSelect = document.getElementById('exercise-select');
+        const weekInput = document.getElementById('week-input');
+        const pastWeeksSelect = document.getElementById('past-weeks-select');
+        const setsInput = document.getElementById('sets-input');
+        const repsInput = document.getElementById('reps-input');
+        const weightInput = document.getElementById('weight-input');
+        const saveButton = document.getElementById('save-button');
+        const newExerciseInput = document.getElementById('new-exercise-input');
+        const addExerciseButton = document.getElementById('add-exercise-button');
+        const exerciseListDiv = document.getElementById('exercise-list');
+        const tableBody = document.getElementById('table-body');
+        const tableHead = document.getElementById('table-head');
+        const statusMessageDiv = document.getElementById('status-message');
+        const tableContainer = document.getElementById('table-container');
+        const dataListEmptyMessage = document.getElementById('data-list-empty-message');
+        const weightChart = document.getElementById('weight-chart');
+        const chartEmptyMessage = document.getElementById('chart-empty-message');
+        const manageExercisesDetails = document.getElementById('manage-exercises-details');
+        const currentUserIdDisplay = document.getElementById('current-user-id-display');
+        
+        let myChart = null;
+
+        const getWeekNumber = date => {
+          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
+          const dayNum = d.getUTCDay() || 7;
+          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+          return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        };
+
+        const renderExercises = exercises => {
+          exerciseSelect.innerHTML = '';
+          exerciseListDiv.innerHTML = '';
+          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
+          if (exercises.length === 0) {
+            defaultExercises.forEach(async name => {
+              try {
+                await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name });
+              } catch (e) {
+                console.error("Fel vid tillägg av standardövning:", e);
+              }
+            });
+          }
+          exercises.sort((a, b) => a.name.localeCompare(b.name));
+          exercises.forEach(ex => {
+            const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
+            exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
+            exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
+          });
+        };
+
+        const renderAllData = data => {
+          renderWorkoutData(data);
+          renderChart(data);
+        };
+
+        const renderWorkoutData = data => {
+          const uniqueWeeks = [...new Set(data.map(item => item.week))].sort((a, b) => b - a);
+          populateWeekDropdown(uniqueWeeks);
+          const selectedWeek = pastWeeksSelect.value;
+          const selectedWeekInt = parseInt(selectedWeek);
+          if (uniqueWeeks.includes(selectedWeekInt)) {
+            renderTable(data, selectedWeek);
+          } else {
+            if (uniqueWeeks.length > 0) {
+              const latestWeek = uniqueWeeks[0];
+              pastWeeksSelect.value = latestWeek;
+              renderTable(data, latestWeek);
+            } else {
+              renderTable(data, null);
+            }
+          }
+        };
+
+        const renderChart = data => {
+          chartEmptyMessage.classList.toggle('hidden', data.length > 0);
+          if (myChart) myChart.destroy();
+          if (data.length === 0) return;
+          const grouped = data.reduce((acc, entry) => {
+            (acc[entry.week] = acc[entry.week] || {})[entry.exercise] = (acc[entry.week][entry.exercise] || []).concat(entry);
+            return acc;
+          }, {});
+          const weeks = Object.keys(grouped).sort((a, b) => a - b);
+          const exercises = [...new Set(data.map(item => item.exercise))].sort();
+          const datasets = exercises.map(ex => {
+            const displayedName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
+            return {
+              label: displayedName,
+              data: weeks.map(w => {
+                const latestEntry = grouped[w][ex] ? grouped[w][ex].reduce((a, b) => (a.timestamp > b.timestamp) ? a : b) : null;
+                return latestEntry ? latestEntry.weight : null;
+              }),
+              borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
+              tension: .1,
+              fill: false,
+              spanGaps: true
+            };
+          });
+          myChart = new Chart(weightChart, {
+            type: 'line',
+            data: {
+              labels: weeks.map(w => `Vecka ${w}`),
+              datasets
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  labels: {
+                    color: '#e0e0e0'
+                  }
+                }
+              },
+              scales: {
+                x: {
+                  ticks: {
+                    color: '#e0e0e0'
+                  },
+                  grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                  },
+                  title: {
+                    display: true,
+                    text: 'Vecka',
+                    color: '#e0e0e0'
+                  }
+                },
+                y: {
+                  ticks: {
+                    color: '#e0e0e0'
+                  },
+                  grid: {
+                    color: 'rgba(255, 255, 255, 0.1)'
+                  },
+                  title: {
+                    display: true,
+                    text: 'Vikt (kg)',
+                    color: '#e0e0e0'
+                  }
+                }
+              }
+            }
+          });
+        };
+
+        const populateWeekDropdown = weeks => {
+          const currentVal = pastWeeksSelect.value;
+          pastWeeksSelect.innerHTML = '';
+          weeks.forEach(week => pastWeeksSelect.innerHTML += `<option value="${week}">Vecka ${week}</option>`);
+          if (weeks.length > 0) {
+            if (weeks.includes(parseInt(currentVal))) {
+              pastWeeksSelect.value = currentVal;
+            } else {
+              pastWeeksSelect.value = weeks[0];
+            }
+          } else {
+            pastWeeksSelect.innerHTML = '<option value="">Inga veckor</option>';
+          }
+        };
+
+        const renderTable = (data, selectedWeek) => {
+          tableHead.innerHTML = '<tr><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
+          tableBody.innerHTML = '';
+          const filtered = selectedWeek ? data.filter(item => item.week === parseInt(selectedWeek)) : [];
+          dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
+          if (filtered.length === 0) {
+            tableContainer.style.display = 'none';
+            return;
+          }
+          tableContainer.style.display = 'block';
+          const exercises = [...new Set(filtered.map(item => item.exercise))].sort();
+          exercises.forEach(ex => {
+            const displayedExName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
+            const latest = filtered.filter(item => item.exercise === ex).reduce((a, b) => (a.timestamp > b.timestamp) ? a : b);
+            tableBody.innerHTML += `<tr><td>${displayedExName}</td><td>${latest.sets ?? '-'}</td><td>${latest.reps ?? '-'}</td><td>${latest.weight}</td><td><button data-id="${latest.id}" class="delete-entry-button">X</button></td></tr>`;
+          });
+        };
+
+        const enforceMaxLength = event => {
+          const maxLength = 4;
+          const element = event.target;
+          element.value = element.value.replace(',', '.');
+          if (element.value.length > maxLength) {
+            element.value = element.value.slice(0, maxLength);
+          }
+        };
+
+        const showStatusMessage = (message, type) => {
+          statusMessageDiv.textContent = message;
+          statusMessageDiv.classList.add(type);
+          statusMessageDiv.classList.remove(type === 'success' ? 'error' : 'success');
+          setTimeout(() => {
+            statusMessageDiv.textContent = "";
+            statusMessageDiv.classList.remove(type);
+          }, type === 'success' ? 2000 : 3000);
+        };
+
+        const handleNumberInputKeydown = event => {
+          const invalidChars = ['e', '+', '-'];
+          const target = event.target;
+          if (invalidChars.includes(event.key.toLowerCase())) {
+            event.preventDefault();
+          }
+          if (target.id === 'weight-input' && event.key === ',') {
+            event.preventDefault();
+            target.value += '.';
+          }
+        };
+
+        const closeManageExercises = () => {
+          if (manageExercisesDetails.open) {
+            manageExercisesDetails.open = false;
+          }
+        };
+
+        // Här sätts all app-logik upp efter att en användare har loggats in
+        const initializeAppLogic = (db, userId, config) => {
+          // Eventlyssnare för "Spara"
+          saveButton.addEventListener('click', async () => {
+            const exercise = exerciseSelect.value;
+            const week = parseInt(weekInput.value);
+            const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
+            const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
+            const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
+            const timestamp = Date.now();
+
+            if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
+              showStatusMessage("Fyll i alla fält korrekt.", 'error');
+              return;
+            }
+
+            try {
+              await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), {
+                exercise,
+                week,
+                sets,
+                reps,
+                weight,
+                timestamp
+              });
+              showStatusMessage("Data sparad!", 'success');
+              [setsInput, repsInput, weightInput].forEach(i => i.value = '');
+            } catch (e) {
+              console.error("Fel vid spara data:", e);
+              showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
+            }
+          });
+
+          // Eventlyssnare för "Lägg till"
+          addExerciseButton.addEventListener('click', async () => {
+            const newExerciseName = newExerciseInput.value.trim();
+            if (!newExerciseName) {
+              showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
+              return;
+            }
+
+            try {
+              const q = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), where("name", "==", newExerciseName));
+              const querySnapshot = await getDocs(q);
+              if (!querySnapshot.empty) {
+                showStatusMessage("Denna övning finns redan.", 'error');
+                return;
+              }
+
+              await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name: newExerciseName });
+              newExerciseInput.value = '';
+              showStatusMessage("Övning tillagd!", 'success');
+            } catch (e) {
+              console.error("Fel vid tillägg av övning:", e);
+              showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
+            }
+          });
+
+          // Eventdelegation för klick på dynamiska övningstaggar
+          exerciseListDiv.addEventListener('click', async e => {
+            if (e.target.classList.contains('exercise-tag-remove')) {
+              const docId = e.target.dataset.id;
+              try {
+                const exerciseDocRef = doc(db, `artifacts/${config.projectId}/users/${userId}/exercises`, docId);
+                const exerciseDoc = await getDoc(exerciseDocRef);
+                const exerciseName = exerciseDoc.data().name;
+
+                const workoutsQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), where("exercise", "==", exerciseName));
+                const workoutsSnapshot = await getDocs(workoutsQuery);
+                const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, workoutDoc.id)));
+                await Promise.all(deletePromises);
+                await deleteDoc(exerciseDocRef);
+                showStatusMessage("Övning och all associerad data borttagen!", 'success');
+              } catch (e) {
+                console.error("Fel vid borttagning av övning och data:", e);
+                showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
+              }
+            }
+          });
+
+          // Eventdelegation för klick på tabellrader
+          tableBody.addEventListener('click', async e => {
+            if (e.target.classList.contains('delete-entry-button')) {
+              const docId = e.target.dataset.id;
+              try {
+                await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, docId));
+                showStatusMessage("Inmatning borttagen!", 'success');
+              } catch (e) {
+                console.error("Fel vid borttagning av inmatning:", e);
+                showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
+              }
+            }
+          });
+
+          pastWeeksSelect.addEventListener('change', () => {
+            renderWorkoutData(workoutData);
+          });
+
+          weekInput.addEventListener('input', enforceMaxLength);
+          setsInput.addEventListener('input', enforceMaxLength);
+          repsInput.addEventListener('input', enforceMaxLength);
+          weightInput.addEventListener('input', enforceMaxLength);
+          weekInput.addEventListener('keydown', handleNumberInputKeydown);
+          setsInput.addEventListener('keydown', handleNumberInputKeydown);
+          repsInput.addEventListener('keydown', handleNumberInputKeydown);
+          weightInput.addEventListener('keydown', handleNumberInputKeydown);
+
+          const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
+          workoutInputFields.forEach(field => {
+            field.addEventListener('change', closeManageExercises);
+            field.addEventListener('input', closeManageExercises);
+          });
+
+          document.addEventListener('click', event => {
+            if (!manageExercisesDetails.contains(event.target)) {
+              closeManageExercises();
+            }
+          });
+          
+          weekInput.value = getWeekNumber(new Date());
+
+          onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
+            const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderExercises(exercises);
+          });
+
+          onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
+            workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderAllData(workoutData);
+          });
+        };
+        
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
+                initializeAppLogic(db, userId, firebaseConfig);
+            }
+        });
+
+      } catch (e) {
+        console.error("Initialization failed:", e);
+      }
+    };
+
+    window.onload = setupApp;
+  </script>
+</body>
+</html>
