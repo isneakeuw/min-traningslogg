@@ -113,8 +113,16 @@
         import { getAuth, onAuthStateChanged, signOut, GoogleAuthProvider, signInWithPopup } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, collection, onSnapshot, query, addDoc, serverTimestamp, getDocs, deleteDoc, doc, updateDoc, where } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
         
-        const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+        const firebaseConfig = {
+      apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
+      authDomain: "traningslogg-a271a.firebaseapp.com",
+      projectId: "traningslogg-a271a",
+      storageBucket: "traningslogg-a271a.firebasestorage.app",
+      messagingSenderId: "949604620134",
+      appId: "1:949604620134:web:424835eafca2dc0a66daa7",
+      measurementId: "G-Q9MRXSQ6JB"
+    };
+        const appId = "traningslogg-a271a";
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
