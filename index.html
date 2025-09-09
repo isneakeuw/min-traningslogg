@@ -410,13 +410,14 @@
       let workoutData = [];
 
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID",
+      const firebaseConfig = {
+        apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
+        authDomain: "traningslogg-a271a.firebaseapp.com",
+        projectId: "traningslogg-a271a",
+        storageBucket: "traningslogg-a271a.firebasestorage.app",
+        messagingSenderId: "949604620134",
+        appId: "1:949604620134:web:424835eafca2dc0a66daa7",
+        measurementId: "G-Q9MRXSQ6JB"
       };
 
       try {
@@ -427,8 +428,6 @@
         if (typeof __initial_auth_token !== 'undefined') {
             await signInWithCustomToken(auth, __initial_auth_token);
         } else {
-            // Detta är en fallback för lokala tester. Appen kan initialiseras men
-            // kan inte ansluta till databasen utan en giltig token.
             await signInAnonymously(auth);
         }
       
@@ -728,7 +727,7 @@
             }
           });
 
-          // Eventdelegation för klick på tabellrade
+          // Eventdelegation för klick på tabellrader
           tableBody.addEventListener('click', async e => {
             if (e.target.classList.contains('delete-entry-button')) {
               const docId = e.target.dataset.id;
@@ -785,22 +784,11 @@
                 const userId = user.uid;
                 currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
                 initializeAppLogic(db, userId, firebaseConfig);
-            } else {
-                 console.log("Ingen användare inloggad. Logga in för att komma åt databasfunktioner.");
-                 currentUserIdDisplay.textContent = "Logga in för att använda appen.";
-                 document.getElementById('main-content').innerHTML = `
-                    <div style="text-align: center; padding: 2rem;">
-                        <p style="color: var(--text-color);">
-                            Den här appen kräver inloggning. Vänligen uppdatera sidan för att logga in automatiskt.
-                        </p>
-                    </div>
-                 `;
             }
         });
 
       } catch (e) {
         console.error("Initialization failed:", e);
-        showStatusMessage("Appen kunde inte starta korrekt. Vänligen uppdatera sidan.", 'error');
       }
     };
 
