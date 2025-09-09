@@ -373,12 +373,11 @@
 
     .dracula-image {
       width: 150px;
-      height: 150px; /* Ändrad till 150px för att matcha bredden */
-      object-fit: cover; /* Lägg till object-fit för att behålla proportionerna */
+      height: 150px;
+      object-fit: cover;
       margin-bottom: 20px;
       border-radius: 50%;
       border: 3px solid var(--neon-lila);
-      /* Förstärkt glödande skugga */
       box-shadow: 0 0 20px var(--neon-lila);
     }
 
@@ -481,7 +480,8 @@
     
     <!-- Login Section -->
     <div id="login-container" class="card flex flex-col items-center justify-center text-center">
-      <img src="greve_dracula.jpg" alt="Greve Dracula" class="dracula-image">
+      <!-- Uppdaterad bild-URL som alltid fungerar -->
+      <img src="https://placehold.co/150x150/2a1443/a879e6?text=DRACULA" alt="Greve Dracula" class="dracula-image">
       <h3 class="mb-4">Logga in för att spara din data</h3>
       <div class="space-y-4 w-full">
         <button id="google-sign-in-button" class="auth-button w-full">
@@ -597,30 +597,44 @@
     const hideModal = (modalId) => {
         document.getElementById(modalId).style.display = "none";
     };
+    
+    // Hanterar modal-fönster för att visa meddelanden
+    const showMessageModal = (title, message) => {
+      document.getElementById('output-modal-title').textContent = title;
+      document.getElementById('output-modal-content').innerHTML = `<p>${message}</p>`;
+      showModal('output-modal');
+    };
 
     const setupApp = async () => {
       setLogLevel('debug');
       let workoutData = [];
-
-      const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
-        apiKey: "YOUR_API_KEY",
-        authDomain: "YOUR_AUTH_DOMAIN",
-        projectId: "YOUR_PROJECT_ID",
-        storageBucket: "YOUR_STORAGE_BUCKET",
-        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
-        appId: "YOUR_APP_ID",
+      
+      const firebaseConfig = {
+        apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
+        authDomain: "traningslogg-a271a.firebaseapp.com",
+        projectId: "traningslogg-a271a",
+        storageBucket: "traningslogg-a271a.firebasestorage.app",
+        messagingSenderId: "949604620134",
+        appId: "1:949604620134:web:424835eafca2dc0a66daa7",
+        measurementId: "G-Q9MRXSQ6JB"
       };
+      
+      const appId = firebaseConfig.projectId;
 
       try {
         const app = initializeApp(firebaseConfig);
         const db = getFirestore(app);
         const auth = getAuth(app);
         
+        // --- Notera: För Google-inloggning måste du också aktivera Google som inloggningsmetod i ditt Firebase-projekt.
+        // Gå till Firebase-konsolen > Authentication > Sign-in method > Enable Google.
+        // ---
+        
         const mainContent = document.getElementById('main-content');
         const loginContainer = document.getElementById('login-container');
         const anonymousSignInButton = document.getElementById('anonymous-sign-in-button');
         const googleSignInButton = document.getElementById('google-sign-in-button');
+        const closeModalButton = document.getElementById('close-modal-button');
 
         const exerciseSelect = document.getElementById('exercise-select');
         const weekInput = document.getElementById('week-input');
@@ -641,7 +655,6 @@
         const chartEmptyMessage = document.getElementById('chart-empty-message');
         const manageExercisesDetails = document.getElementById('manage-exercises-details');
         const currentUserIdDisplay = document.getElementById('current-user-id-display');
-        const closeModalButton = document.getElementById('close-modal-button');
         
         let myChart = null;
         let unsubscribeExercises = null;
@@ -793,46 +806,26 @@
           dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
           if (filtered.length === 0) {
             tableContainer.style.display = 'none';
-            return;
-          }
-          tableContainer.style.display = 'block';
-          const exercises = [...new Set(filtered.map(item => item.exercise))].sort();
-          exercises.forEach(ex => {
-            const displayedExName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
-            const latest = filtered.filter(item => item.exercise === ex).reduce((a, b) => (a.timestamp > b.timestamp) ? a : b);
-            tableBody.innerHTML += `<tr><td>${displayedExName}</td><td>${latest.sets ?? '-'}</td><td>${latest.reps ?? '-'}</td><td>${latest.weight}</td><td><button data-id="${latest.id}" class="delete-entry-button">X</button></td></tr>`;
-          });
-        };
-
-        const enforceMaxLength = event => {
-          const maxLength = 4;
-          const element = event.target;
-          element.value = element.value.replace(',', '.');
-          if (element.value.length > maxLength) {
-            element.value = element.value.slice(0, maxLength);
+          } else {
+            tableContainer.style.display = 'block';
+            filtered.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
+              const row = document.createElement('tr');
+              row.innerHTML = `
+                <td>${item.exercise}</td>
+                <td>${item.sets}</td>
+                <td>${item.reps}</td>
+                <td>${item.weight}</td>
+                <td><button data-id="${item.id}" class="delete-entry-button">X</button></td>
+              `;
+              tableBody.appendChild(row);
+            });
           }
         };
 
-        const showStatusMessage = (message, type) => {
+        const showStatusMessage = (message, isError = false) => {
           statusMessageDiv.textContent = message;
-          statusMessageDiv.classList.add(type);
-          statusMessageDiv.classList.remove(type === 'success' ? 'error' : 'success');
-          setTimeout(() => {
-            statusMessageDiv.textContent = "";
-            statusMessageDiv.classList.remove(type);
-          }, type === 'success' ? 2000 : 3000);
-        };
-
-        const handleNumberInputKeydown = event => {
-          const invalidChars = ['e', '+', '-'];
-          const target = event.target;
-          if (invalidChars.includes(event.key.toLowerCase())) {
-            event.preventDefault();
-          }
-          if (target.id === 'weight-input' && event.key === ',') {
-            event.preventDefault();
-            target.value += '.';
-          }
+          statusMessageDiv.className = isError ? 'status-message error' : 'status-message success';
+          setTimeout(() => statusMessageDiv.textContent = '', 3000);
         };
 
         const closeManageExercises = () => {
@@ -841,184 +834,154 @@
           }
         };
 
-        // Här sätts all app-logik upp efter att en användare har loggats in
-        const initializeAppLogic = (db, userId, config) => {
-            // Unsubscribe from previous listeners
-            if (unsubscribeExercises) unsubscribeExercises();
-            if (unsubscribeWorkouts) unsubscribeWorkouts();
-
-            // Spara
-            saveButton.addEventListener('click', async () => {
-                const exercise = exerciseSelect.value;
-                const week = parseInt(weekInput.value);
-                const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
-                const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
-                const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
-                const timestamp = Date.now();
-
-                if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
-                    showStatusMessage("Fyll i alla fält korrekt.", 'error');
-                    return;
-                }
-
-                try {
-                    await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), {
-                        exercise,
-                        week,
-                        sets,
-                        reps,
-                        weight,
-                        timestamp
-                    });
-                    showStatusMessage("Data sparad!", 'success');
-                    [setsInput, repsInput, weightInput].forEach(i => i.value = '');
-                } catch (e) {
-                    console.error("Fel vid spara data:", e);
-                    showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
-                }
-            });
-
-            // Lägg till övning
-            addExerciseButton.addEventListener('click', async () => {
-                const newExerciseName = newExerciseInput.value.trim();
-                if (!newExerciseName) {
-                    showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
-                    return;
-                }
-
-                try {
-                    const q = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), where("name", "==", newExerciseName));
-                    const querySnapshot = await getDocs(q);
-                    if (!querySnapshot.empty) {
-                        showStatusMessage("Denna övning finns redan.", 'error');
-                        return;
-                    }
-
-                    await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name: newExerciseName });
-                    newExerciseInput.value = '';
-                    showStatusMessage("Övning tillagd!", 'success');
-                } catch (e) {
-                    console.error("Fel vid tillägg av övning:", e);
-                    showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
-                }
-            });
-
-            // Ta bort övning
-            exerciseListDiv.addEventListener('click', async e => {
-                if (e.target.classList.contains('exercise-tag-remove')) {
-                    const docId = e.target.dataset.id;
-                    try {
-                        const exerciseDocRef = doc(db, `artifacts/${config.projectId}/users/${userId}/exercises`, docId);
-                        const exerciseDoc = await getDoc(exerciseDocRef);
-                        const exerciseName = exerciseDoc.data().name;
-
-                        const workoutsQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), where("exercise", "==", exerciseName));
-                        const workoutsSnapshot = await getDocs(workoutsQuery);
-                        const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, workoutDoc.id)));
-                        await Promise.all(deletePromises);
-                        await deleteDoc(exerciseDocRef);
-                        showStatusMessage("Övning och all associerad data borttagen!", 'success');
-                    } catch (e) {
-                        console.error("Fel vid borttagning av övning och data:", e);
-                        showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
-                    }
-                }
-            });
-
-            // Ta bort inmatning
-            tableBody.addEventListener('click', async e => {
-                if (e.target.classList.contains('delete-entry-button')) {
-                    const docId = e.target.dataset.id;
-                    try {
-                        await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, docId));
-                        showStatusMessage("Inmatning borttagen!", 'success');
-                    } catch (e) {
-                        console.error("Fel vid borttagning av inmatning:", e);
-                        showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
-                    }
-                }
-            });
-
-            // Övriga händelselyssnare
-            pastWeeksSelect.addEventListener('change', () => {
-                renderWorkoutData(workoutData);
-            });
-
-            weekInput.addEventListener('input', enforceMaxLength);
-            setsInput.addEventListener('input', enforceMaxLength);
-            repsInput.addEventListener('input', enforceMaxLength);
-            weightInput.addEventListener('input', enforceMaxLength);
-            weekInput.addEventListener('keydown', handleNumberInputKeydown);
-            setsInput.addEventListener('keydown', handleNumberInputKeydown);
-            repsInput.addEventListener('keydown', handleNumberInputKeydown);
-            weightInput.addEventListener('keydown', handleNumberInputKeydown);
-            closeModalButton.addEventListener('click', () => hideModal('output-modal'));
-
-            const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
-            workoutInputFields.forEach(field => {
-                field.addEventListener('change', closeManageExercises);
-                field.addEventListener('input', closeManageExercises);
-            });
-
-            document.addEventListener('click', event => {
-                if (!manageExercisesDetails.contains(event.target)) {
-                    closeManageExercises();
-                }
-            });
-            
-            weekInput.value = getWeekNumber(new Date());
-
-            // Real-time listeners
-            unsubscribeExercises = onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
-                const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderExercises(exercises);
-            });
-
-            unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
-                workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                renderAllData(workoutData);
-            });
-        };
-        
-        // Initial inloggning och UI-hantering
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                const userId = user.uid;
-                currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
-                loginContainer.classList.add('hidden');
-                mainContent.classList.remove('hidden');
-                initializeAppLogic(db, userId, firebaseConfig);
-            } else {
-                loginContainer.classList.remove('hidden');
-                mainContent.classList.add('hidden');
-            }
-        });
-        
+        // --- Event Listeners ---
         anonymousSignInButton.addEventListener('click', async () => {
-            try {
-                if (typeof __initial_auth_token !== 'undefined') {
-                     await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                     await signInAnonymously(auth);
-                }
-            } catch (e) {
-                console.error("Anonym inloggning misslyckades:", e);
-                alert("Anonym inloggning misslyckades. Vänligen försök igen.");
-            }
+          showModal('loading-modal');
+          try {
+            await signInAnonymously(auth);
+            hideModal('loading-modal');
+          } catch (e) {
+            hideModal('loading-modal');
+            showMessageModal('Inloggning misslyckades', 'Kunde inte logga in anonymt. Försök igen.');
+            console.error("Anonym inloggning misslyckades:", e);
+          }
         });
 
         googleSignInButton.addEventListener('click', async () => {
+          showModal('loading-modal');
+          try {
             const provider = new GoogleAuthProvider();
-            try {
-                await signInWithPopup(auth, provider);
-            } catch (error) {
-                console.error("Google-inloggning misslyckades:", error);
-                alert("Google-inloggning misslyckades. Vänligen försök igen.");
+            await signInWithPopup(auth, provider);
+            hideModal('loading-modal');
+          } catch (e) {
+            hideModal('loading-modal');
+            showMessageModal('Inloggning misslyckades', 'Kunde inte logga in med Google. Försök igen.');
+            console.error("Google inloggning misslyckades:", e);
+          }
+        });
+        
+        closeModalButton.addEventListener('click', () => {
+          hideModal('output-modal');
+        });
+
+        saveButton.addEventListener('click', async () => {
+          const exercise = exerciseSelect.value;
+          const week = parseInt(weekInput.value);
+          const sets = parseInt(setsInput.value);
+          const reps = parseInt(repsInput.value);
+          const weight = parseFloat(weightInput.value);
+          const timestamp = Date.now();
+
+          if (!exercise || isNaN(week) || isNaN(sets) || isNaN(reps) || isNaN(weight) || weight <= 0) {
+            showStatusMessage('Fyll i alla fält korrekt.', true);
+            return;
+          }
+
+          try {
+            await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
+              exercise, week, sets, reps, weight, timestamp
+            });
+            showStatusMessage('Sparat!');
+          } catch (e) {
+            showStatusMessage('Kunde inte spara data.', true);
+            console.error("Fel vid tillägg av träningsdata:", e);
+          }
+        });
+
+        addExerciseButton.addEventListener('click', async () => {
+          const newExerciseName = newExerciseInput.value.trim();
+          if (newExerciseName === '') {
+            showStatusMessage('Skriv in ett namn på övningen.', true);
+            return;
+          }
+          try {
+            const exercisesRef = collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`);
+            const q = query(exercisesRef, where("name", "==", newExerciseName));
+            const querySnapshot = await getDocs(q);
+            if (!querySnapshot.empty) {
+              showMessageModal('Redan tillagd', 'Denna övning finns redan.');
+              return;
             }
+            await addDoc(exercisesRef, { name: newExerciseName });
+            newExerciseInput.value = '';
+            showStatusMessage('Övning tillagd!');
+          } catch (e) {
+            showStatusMessage('Kunde inte lägga till övning.', true);
+            console.error("Fel vid tillägg av övning:", e);
+          }
+        });
+
+        exerciseListDiv.addEventListener('click', async (event) => {
+          if (event.target.classList.contains('exercise-tag-remove')) {
+            const docId = event.target.dataset.id;
+            try {
+              await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`, docId));
+              showStatusMessage('Övning borttagen.');
+            } catch (e) {
+              showStatusMessage('Kunde inte ta bort övning.', true);
+              console.error("Fel vid borttagning av övning:", e);
+            }
+          }
+        });
+
+        tableBody.addEventListener('click', async (event) => {
+          if (event.target.classList.contains('delete-entry-button')) {
+            const docId = event.target.dataset.id;
+            try {
+              await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`, docId));
+              showStatusMessage('Inmatning borttagen.');
+            } catch (e) {
+              showStatusMessage('Kunde inte ta bort inmatning.', true);
+              console.error("Fel vid borttagning av inmatning:", e);
+            }
+          }
+        });
+
+        pastWeeksSelect.addEventListener('change', () => {
+          renderTable(workoutData, pastWeeksSelect.value);
+        });
+
+        const initializeAppLogic = (db, userId, firebaseConfig) => {
+          loginContainer.classList.add('hidden');
+          mainContent.classList.remove('hidden');
+          currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
+
+          weekInput.value = getWeekNumber(new Date());
+
+          if (unsubscribeExercises) unsubscribeExercises();
+          if (unsubscribeWorkouts) unsubscribeWorkouts();
+
+          unsubscribeExercises = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/exercises`), snapshot => {
+            const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderExercises(exercises);
+          });
+
+          unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${appId}/users/${userId}/workouts`), snapshot => {
+            workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderAllData(workoutData);
+          });
+
+          const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
+          workoutInputFields.forEach(field => {
+            field.addEventListener('change', closeManageExercises);
+            field.addEventListener('input', closeManageExercises);
+          });
+        };
+        
+        onAuthStateChanged(auth, async (user) => {
+          if (user) {
+            const userId = user.uid;
+            initializeAppLogic(db, userId, firebaseConfig);
+          } else {
+            loginContainer.classList.remove('hidden');
+            mainContent.classList.add('hidden');
+            currentUserIdDisplay.textContent = ``;
+          }
         });
 
       } catch (e) {
-        console.error("Initiering misslyckades:", e);
+        console.error("Initialization failed:", e);
+        showMessageModal('Fel', 'Kunde inte starta appen. Kontrollera konsolen för detaljer.');
       }
     };
 
