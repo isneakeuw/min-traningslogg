@@ -270,6 +270,7 @@
       border-collapse: collapse;
       width: 100%;
       font-size: .875rem;
+      table-layout: fixed;
     }
 
     .styled-table th,
@@ -282,6 +283,7 @@
     .styled-table th:first-child,
     .styled-table td:first-child {
       text-align: left;
+      width: 20%;
     }
 
     .styled-table thead th {
@@ -296,6 +298,12 @@
 
     .styled-table thead th:last-child {
       border-top-right-radius: .5rem;
+    }
+    
+    .styled-table th:nth-child(2),
+    .styled-table td:nth-child(2) {
+      width: 20%;
+      word-break: break-word;
     }
 
     .styled-table tbody tr:hover {
