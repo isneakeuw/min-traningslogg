@@ -3,14 +3,15 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Greve Draculas Träningslogg</title>
+  <title>Träningslogg</title>
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
     :root {
-      --bg-color: #2a1443; /* Mörkare lila bakgrund */
-      --container-bg-color: #3f225e; /* Mellanlila */
-      --card-bg-color: #1c1c1c; /* Mörkgrå för kort */
+      --bg-color: #2a1443;
+      --container-bg-color: #3f225e;
+      --card-bg-color: #1c1c1c;
       --text-color: #e0e0e0;
-      --header-color: #a879e6; /* Neon lila */
+      --header-color: #a879e6;
       --accent-color: #5cb85c;
       --accent-hover-color: #4a904a;
       --danger-color: #ef4444;
@@ -25,925 +26,447 @@
     body {
       font-family: 'Roboto', sans-serif;
       color: var(--text-color);
-      /* Uppdaterad bakgrund med gradient för en coolare effekt */
-      background: linear-gradient(135deg, #1f0c2f 0%, #2a1443 50%, #1f0c2f 100%);
-      padding: 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      background: linear-gradient(135deg, #2a1443, #1c0d29);
       min-height: 100vh;
-      overflow-x: hidden;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem;
     }
-
-    @media (min-width: 640px) {
-      body {
-        padding: 2rem;
-      }
-    }
-
-    #app-container {
+    .container {
+      max-width: 900px;
       width: 100%;
-      max-width: 32rem;
       background-color: var(--container-bg-color);
-      border-radius: 1rem;
-      /* Förbättrad skugga */
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
-      padding: 1.5rem;
+      padding: 2rem;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
     }
-
-    @media (min-width: 640px) {
-      #app-container {
-        padding: 2rem;
-      }
-    }
-
-    #app-header {
-      margin-bottom: 2.5rem;
-      text-align: center;
-    }
-
-    #app-header h1 {
-      font-size: 1.875rem;
-      font-weight: 700;
-      color: var(--header-color);
-      margin-bottom: .25rem;
-      /* Glödande effekt på texten */
-      text-shadow: 0 0 10px var(--neon-lila);
-    }
-
-    @media (min-width: 640px) {
-      #app-header h1 {
-        font-size: 2.25rem;
-      }
-    }
-
     .card {
       background-color: var(--card-bg-color);
-      padding: 1.25rem;
-      border-radius: .75rem;
-      margin-bottom: 1.5rem;
-      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      padding: 1.5rem;
+      margin-top: 1.5rem;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+    }
+    h1, h2, h3 {
+      color: var(--header-color);
+    }
+    .btn {
+      padding: 0.75rem 1.5rem;
+      border-radius: 9999px;
+      font-weight: bold;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+    }
+    .btn-primary {
+      background-color: var(--neon-lila);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background-color: var(--neon-lila-hover);
+      box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+    }
+    .btn-secondary {
+      background-color: var(--button-bg-color);
+      color: var(--text-color);
       border: 1px solid var(--border-color);
     }
-
-    .card h3 {
-      font-size: 1.125rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: var(--neon-lila);
-      text-align: center;
+    .btn-secondary:hover {
+      background-color: var(--button-hover-color);
     }
-    
-    .card h4 {
-      font-size: 1rem;
-      font-weight: 600;
-      margin-bottom: 0.5rem;
-      color: var(--text-color);
-      text-align: center;
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: #fff;
     }
-
-
-    .input-group {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-      align-items: center;
+    .btn-danger:hover {
+      opacity: 0.8;
     }
-
-    .input-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      width: 100%;
-    }
-
-    @media (min-width: 640px) {
-      .input-grid {
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1rem;
-      }
-    }
-
-    .input-item {
-      display: flex;
-      flex-direction: column;
-      gap: .25rem;
-      align-items: center;
-    }
-
-    .input-item label {
-      color: #9ca3af;
-      font-size: .875rem;
-      font-weight: 600;
-    }
-
-    .input-field {
+    .form-input {
       background-color: var(--input-bg-color);
-      color: white;
-      padding: .75rem;
-      border-radius: .5rem;
-      width: 100%;
+      border: 1px solid var(--border-color);
+      padding: 0.75rem;
+      border-radius: 8px;
+      color: var(--text-color);
+    }
+    .form-input:focus {
       outline: none;
-      border: 2px solid transparent;
-      box-sizing: border-box;
-      text-align: center;
-      font-size: 16px;
-    }
-
-    #exercise-select,
-    #past-weeks-select {
-      max-width: 15rem;
-    }
-
-    .input-field:focus {
       border-color: var(--neon-lila);
+      box-shadow: 0 0 0 2px rgba(168, 121, 230, 0.5);
     }
-
-    button {
-      transition: all .3s ease;
-      font-weight: 700;
-      padding: .75rem 1rem;
-      border-radius: .75rem;
-      color: white;
-      cursor: pointer;
-      border: none;
+    .exercise-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--border-color);
     }
-
-    .button-primary {
-      background-color: var(--accent-color);
+    .exercise-list-item:last-child {
+      border-bottom: none;
     }
-    
-    .button-gemini {
-        background-color: var(--neon-lila);
-    }
-    
-    .button-gemini:hover {
-        background-color: var(--neon-lila-hover);
-    }
-
-    .button-primary:hover {
-      background-color: var(--accent-hover-color);
-    }
-
-    .status-message {
-      text-align: center;
-      margin-top: 1rem;
-      height: 1.5rem;
-    }
-
-    .status-message.success {
-      color: #4ade80;
-    }
-
-    .status-message.error {
-      color: var(--danger-color);
-    }
-
-    details>summary {
-      list-style: none;
-      cursor: pointer;
-    }
-
-    details>summary::-webkit-details-marker {
+    .hidden {
       display: none;
     }
-
-    details>summary::before {
-      content: "►";
-      float: left;
-      margin-right: .5rem;
-      transition: transform .2s ease;
-    }
-
-    details[open]>summary::before {
-      transform: rotate(90deg);
-    }
-
-    .exercise-list-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .5rem;
-      margin-top: 1rem;
-    }
-
-    .exercise-tag {
-      display: inline-flex;
-      align-items: center;
-      background-color: var(--input-bg-color);
-      color: var(--text-color);
-      padding: .25rem .75rem;
-      border-radius: 9999px;
-      font-size: .875rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .exercise-tag-remove {
-      background-color: transparent;
-      color: var(--text-color);
-      border: none;
-      margin-left: .25rem;
-      font-size: 1.1rem;
-      padding: .5rem;
-      cursor: pointer;
-      line-height: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .delete-entry-button {
-      background-color: transparent;
-      color: var(--danger-color);
-      font-size: 1rem;
-      font-weight: 700;
-      padding: .2rem .4rem;
-      border: none;
-    }
-
-    .styled-table {
-      border-collapse: collapse;
-      width: 100%;
-      font-size: .875rem;
-    }
-
-    .styled-table th,
-    .styled-table td {
-      padding: .5rem .75rem;
-      border: 1px solid var(--border-color);
-      text-align: center;
-    }
-
-    .styled-table th:first-child,
-    .styled-table td:first-child {
-      text-align: left;
-    }
-
-    .styled-table thead th {
-      background-color: var(--card-bg-color);
-      color: var(--neon-lila);
-      font-weight: 700;
-    }
-
-    .styled-table thead th:first-child {
-      border-top-left-radius: .5rem;
-    }
-
-    .styled-table thead th:last-child {
-      border-top-right-radius: .5rem;
-    }
-
-    .styled-table tbody tr:hover {
-      background-color: rgba(62, 62, 62, 0.5);
-    }
-
-    input[type="number"]::-webkit-inner-spin-button,
-    input[type="number"]::-webkit-outer-spin-button {
-      -webkit-appearance: none;
-      margin: 0;
-    }
-
-    input[type="number"] {
-      -moz-appearance: textfield;
-    }
-
-    .save-button-container {
-      grid-column: 1 / -1;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      margin-top: .5rem;
-    }
-
-    #chart-container {
-      position: relative;
-      height: 250px;
-      width: 100%;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    #new-exercise-input {
-      height: calc(.75rem * 2 + 2px + 1rem);
-    }
-
-    #auth-container {
-      text-align: center;
-      margin-top: 1rem;
-      color: #9ca3af;
-      font-size: .75rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: .5rem;
-    }
-
-    #current-user-id-display {
-      word-break: break-all;
-      margin-bottom: .5rem;
-    }
-    
-    .auth-button {
-      background-color: var(--button-bg-color);
+    #messageModal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: rgba(0, 0, 0, 0.8);
       color: white;
-      padding: .75rem 1rem;
-      border-radius: .5rem;
-      cursor: pointer;
-      font-weight: bold;
-      border: none;
-      transition: background-color 0.3s;
+      padding: 20px 40px;
+      border-radius: 10px;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.5s ease;
+    }
+    #messageModal.show {
+      opacity: 1;
+    }
+    .exercise-item {
       display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      gap: .5rem;
-    }
-    
-    .auth-button:hover {
-        background-color: var(--button-hover-color);
-    }
-
-    #login-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-
-    .dracula-image {
-      width: 150px;
-      height: 150px;
-      object-fit: cover;
-      margin-bottom: 20px;
-      border-radius: 50%;
-      border: 3px solid var(--neon-lila);
-      box-shadow: 0 0 20px var(--neon-lila);
-    }
-
-    /* Modal styles */
-    .modal {
-        display: none; 
-        position: fixed; 
-        z-index: 1000;
-        left: 0;
-        top: 0;
-        width: 100%;
-        height: 100%;
-        overflow: auto; 
-        background-color: rgba(0,0,0,0.6); 
-        padding-top: 150px;
-    }
-
-    .modal-content {
-        background-color: var(--container-bg-color);
-        margin: auto;
-        padding: 2rem;
-        border-radius: 1rem;
-        border: 1px solid var(--border-color);
-        width: 80%;
-        max-width: 400px;
-        text-align: center;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    }
-
-    .modal-content h4 {
-        margin-top: 0;
-        color: var(--neon-lila);
-        font-size: 1.25rem;
-        margin-bottom: 1rem;
-    }
-    
-    .modal-content p {
-        margin-bottom: 2rem;
-    }
-
-    .modal-buttons {
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-    }
-    
-    .loading-spinner {
-        border: 4px solid rgba(255, 255, 255, 0.3);
-        border-top: 4px solid #fff;
-        border-radius: 50%;
-        width: 24px;
-        height: 24px;
-        animation: spin 1s linear infinite;
-        margin: auto;
-    }
-    
-    @keyframes spin {
-        0% { transform: rotate(0deg); }
-        100% { transform: rotate(360deg); }
-    }
-    
-    .llm-output {
-        white-space: pre-wrap;
-        text-align: left;
-        font-size: 1rem;
-        line-height: 1.5;
-        background-color: #2a2a2a;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin-top: 1rem;
-        max-height: 400px;
-        overflow-y: auto;
-    }
-    
-    .audio-player-container {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        margin-top: 1rem;
-    }
-    
-    #audio-player {
-        width: 100%;
-    }
-    
-    .gemini-section {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-        margin-top: 1rem;
+      padding: 0.5rem 0;
     }
   </style>
 </head>
+<body class="bg-gray-900 text-gray-100">
 
-<body>
-  <div id="app-container">
-    <header id="app-header">
-      <h1>Greve Draculas Träningslogg</h1>
-    </header>
-    
-    <!-- Login Section -->
-    <div id="login-container" class="card flex flex-col items-center justify-center text-center">
-      <!-- Uppdaterad bild-URL för att peka på den lokala filen -->
-      <img src="greve_dracula.jpg" alt="Greve Dracula" class="dracula-image" onerror="this.onerror=null;this.src='https://placehold.co/150x150/2a1443/a879e6?text=DRACULA';">
-      <h3 class="mb-4">Logga in för att spara din data</h3>
-      <div class="space-y-4 w-full">
-        <button id="google-sign-in-button" class="auth-button w-full">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
-            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.636,4.524-5.694,7.766-10.437,7.766c-6.4,0-11.608-5.208-11.608-11.608 c0-6.4,5.208-11.608,11.608-11.608c3.41,0,6.505,1.442,8.681,3.771l5.448-5.448C36.65,6.517,31.296,4,24,4 C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20L43.611,20.083z"/>
-            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,19.986,12,24,12c5.056,0,9.458,2.783,11.838,6.864 l5.448-5.448C36.65,6.517,31.296,4,24,4C16.318,4,9.656,7.243,6.306,14.691z"/>
-            <path fill="#4CAF50" d="M24,44c5.166,0,9.986-1.979,13.623-5.597l-5.448-5.448c-2.029,2.964-5.267,4.787-8.175,4.787 c-5.06,0-9.35-3.093-11.396-7.536l-6.57,4.819C9.656,40.757,16.318,44,24,44z"/>
-            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.14-4.137,5.578v0.001l5.448,5.448 C41.655,36.57,44,30.857,44,24C44,22.61,43.893,21.328,43.611,20.083z"/>
-          </svg>
-          Logga in med Google
+  <div class="hidden" id="loginContainer">
+    <div class="text-center p-8 bg-purple-900 rounded-lg shadow-xl">
+      <h2 class="text-2xl font-bold mb-4 text-purple-300">Logga in</h2>
+      <button id="loginBtn" class="btn btn-primary px-6 py-3 text-lg">Logga in anonymt</button>
+    </div>
+  </div>
+
+  <div class="container" id="mainContent">
+    <div class="text-center mb-8">
+      <h1 class="text-4xl font-bold mb-2">Träningslogg</h1>
+      <p class="text-sm font-light text-purple-300" id="currentUserIdDisplay"></p>
+    </div>
+
+    <!-- Spara pass-kort -->
+    <div class="card">
+      <h2 class="text-2xl font-semibold mb-4">Logga ett träningspass</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <select id="exerciseSelect" class="form-input"></select>
+        <input type="number" id="weekInput" placeholder="Vecka" class="form-input" required>
+        <input type="number" id="setsInput" placeholder="Set" class="form-input" required>
+        <input type="number" id="repsInput" placeholder="Reps" class="form-input" required>
+        <input type="number" id="weightInput" placeholder="Vikt (kg)" class="form-input" required>
+      </div>
+      <div class="mt-4 flex justify-end space-x-2">
+        <button id="saveWorkoutBtn" class="btn btn-primary">Spara pass</button>
+      </div>
+    </div>
+
+    <!-- Hantera övningar-kort -->
+    <div class="card">
+      <h2 class="text-2xl font-semibold mb-4">
+        <button id="toggleManageExercisesBtn" class="w-full text-left flex justify-between items-center text-purple-300 hover:text-purple-500 transition-colors duration-200">
+          Hantera övningar
+          <span id="toggleArrow">▼</span>
         </button>
-        <p class="text-xs text-gray-500 mt-2">eller</p>
-        <button id="anonymous-sign-in-button" class="auth-button w-full">
-          Logga in utan konto
-        </button>
-      </div>
-    </div>
-    
-    <!-- Main App Content (hidden by default) -->
-    <div id="main-content" class="hidden">
-      
-      <div class="card">
-        <h3>Ny inmatning</h3>
-        <div class="input-group">
-          <select id="exercise-select" class="input-field"></select>
-          <div class="input-grid">
-            <div class="input-item">
-              <label for="week-input">Vecka</label>
-              <input type="number" inputmode="numeric" id="week-input" class="input-field" min="1">
-            </div>
-            <div class="input-item">
-              <label for="sets-input">Sets</label>
-              <input type="number" inputmode="numeric" id="sets-input" class="input-field" min="1">
-            </div>
-            <div class="input-item">
-              <label for="reps-input">Reps</label>
-              <input type="number" inputmode="numeric" id="reps-input" class="input-field" min="1">
-            </div>
-            <div class="input-item">
-              <label for="weight-input">Vikt (kg)</label>
-              <input type="number" inputmode="decimal" id="weight-input" class="input-field" min="0.1" step="0.1">
-            </div>
-            <div class="save-button-container">
-              <button id="save-button" class="button-primary" style="width:50%;">Spara</button>
-            </div>
-          </div>
+      </h2>
+      <div id="manageExercisesDetails" class="hidden">
+        <div class="mb-4">
+          <input type="text" id="newExerciseInput" placeholder="Ny övning" class="form-input w-full" required>
         </div>
-        <div id="status-message" class="status-message"></div>
-      </div>
-      <details id="manage-exercises-details" class="card">
-        <summary>Hantera Övningar</summary>
-        <div class="input-group">
-          <div style="display:flex;gap:1rem;width:100%;margin-top:.25rem;">
-            <input type="text" id="new-exercise-input" placeholder="Lägg till ny övning" class="input-field">
-            <button id="add-exercise-button" class="button-primary" style="width:auto;padding:.75rem 1rem;">Lägg till</button>
-          </div>
-          <div id="exercise-list" class="exercise-list-container"></div>
+        <div class="flex justify-end space-x-2 mb-4">
+          <button id="addExerciseBtn" class="btn btn-primary">Lägg till ny övning</button>
         </div>
-      </details>
-      <div id="history-card" class="card">
-        <h3>Träningshistorik</h3>
-        <div style="margin-bottom:1rem;">
-          <label for="past-weeks-select" style="color:#9ca3af;font-size:.875rem;font-weight:600;">Välj vecka att visa:</label>
-          <select id="past-weeks-select" class="input-field" style="margin-top:.5rem;"></select>
-        </div>
-        <div id="table-container" style="overflow-x:auto;">
-          <table class="styled-table">
-            <thead id="table-head"></thead>
-            <tbody id="table-body"></tbody>
-          </table>
-        </div>
-        <div id="data-list-empty-message" style="text-align:center;color:#9ca3af;margin-top:1rem;display:none;">Ingen data sparad ännu.</div>
-      </div>
-      <div id="progress-card" class="card">
-        <h3>Viktutveckling</h3>
-        <div id="chart-container">
-          <canvas id="weight-chart"></canvas>
-          <div id="chart-empty-message" style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);color:#9ca3af;text-align:center;">Ingen data att visa.</div>
+        <div>
+          <h3 class="text-xl font-medium mb-2">Dina övningar</h3>
+          <ul id="exercisesList" class="space-y-2"></ul>
         </div>
       </div>
     </div>
-    <div id="auth-container">
-      <p id="current-user-id-display"></p>
-    </div>
-  </div>
-  <!-- Modals -->
-  <div id="loading-modal" class="modal">
-    <div class="modal-content">
-      <div class="loading-spinner"></div>
-      <p style="margin-top:1rem; margin-bottom:0.5rem; color:var(--text-color);">Arbetar hårt i kryptan...</p>
-    </div>
-  </div>
 
-  <div id="output-modal" class="modal">
-    <div class="modal-content">
-      <h4 id="output-modal-title"></h4>
-      <div id="output-modal-content"></div>
-      <button id="close-modal-button" class="button-gemini" style="width:100%;">Stäng</button>
+    <!-- Träningspass-historik -->
+    <div class="card">
+      <h2 class="text-2xl font-semibold mb-4">Din träningshistorik</h2>
+      <div id="workoutsList" class="space-y-4"></div>
     </div>
   </div>
+  
+  <div id="messageModal" class="hidden"></div>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-    import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-    const showModal = (modalId) => {
-        document.getElementById(modalId).style.display = "block";
-    };
-
-    const hideModal = (modalId) => {
-        document.getElementById(modalId).style.display = "none";
-    };
+    import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     
-    // Hanterar modal-fönster för att visa meddelanden
-    const showMessageModal = (title, message) => {
-      document.getElementById('output-modal-title').textContent = title;
-      document.getElementById('output-modal-content').innerHTML = `<p>${message}</p>`;
-      showModal('output-modal');
-    };
+    // Globala variabler tillhandahållna av plattformen
+    const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
+    const firebaseConfig = JSON.parse(typeof __firebase_config !== 'undefined' ? __firebase_config : '{}');
+    const initialAuthToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
 
-    const setupApp = async () => {
-      setLogLevel('debug');
-      let workoutData = [];
-      
-      const firebaseConfig = {
-        apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
-        authDomain: "traningslogg-a271a.firebaseapp.com",
-        projectId: "traningslogg-a271a",
-        storageBucket: "traningslogg-a271a.firebasestorage.app",
-        messagingSenderId: "949604620134",
-        appId: "1:949604620134:web:424835eafca2dc0a66daa7",
-        measurementId: "G-Q9MRXSQ6JB"
-      };
-      
-      const appId = firebaseConfig.projectId;
+    // UI-element
+    const loginContainer = document.getElementById('loginContainer');
+    const loginBtn = document.getElementById('loginBtn');
+    const mainContent = document.getElementById('mainContent');
+    const currentUserIdDisplay = document.getElementById('currentUserIdDisplay');
+    const exerciseSelect = document.getElementById('exerciseSelect');
+    const weekInput = document.getElementById('weekInput');
+    const setsInput = document.getElementById('setsInput');
+    const repsInput = document.getElementById('repsInput');
+    const weightInput = document.getElementById('weightInput');
+    const newExerciseInput = document.getElementById('newExerciseInput');
+    const exercisesList = document.getElementById('exercisesList');
+    const workoutsList = document.getElementById('workoutsList');
+    const saveWorkoutBtn = document.getElementById('saveWorkoutBtn');
+    const addExerciseBtn = document.getElementById('addExerciseBtn');
+    const toggleManageExercisesBtn = document.getElementById('toggleManageExercisesBtn');
+    const manageExercisesDetails = document.getElementById('manageExercisesDetails');
+    const messageModal = document.getElementById('messageModal');
 
+    let db;
+    let auth;
+    let workoutData = [];
+    let unsubscribeExercises = null;
+    let unsubscribeWorkouts = null;
+
+    // Funktion för att visa meddelanden till användaren
+    function showMessageModal(message, isError = false) {
+        messageModal.textContent = message;
+        messageModal.style.backgroundColor = isError ? '#ef4444' : 'rgba(0, 0, 0, 0.8)';
+        messageModal.classList.add('show');
+        setTimeout(() => {
+            messageModal.classList.remove('show');
+        }, 3000);
+    }
+
+    // Toggla hanteringssektionen
+    function toggleManageExercises() {
+        manageExercisesDetails.classList.toggle('hidden');
+        document.getElementById('toggleArrow').textContent = manageExercisesDetails.classList.contains('hidden') ? '▼' : '▲';
+    }
+    
+    // Stäng hanteringssektionen
+    function closeManageExercises() {
+      if (!manageExercisesDetails.classList.contains('hidden')) {
+        toggleManageExercises();
+      }
+    }
+
+    // Hämta veckonummer
+    function getWeekNumber(d) {
+        d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+        d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+        const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+        const weekNo = Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
+        return weekNo;
+    }
+
+    // Återge övningar i dropdown och lista
+    function renderExercises(exercises) {
+        exerciseSelect.innerHTML = '';
+        exercisesList.innerHTML = '';
+        if (exercises.length === 0) {
+            const noExerciseOption = document.createElement('option');
+            noExerciseOption.textContent = 'Inga övningar tillagda';
+            noExerciseOption.disabled = true;
+            noExerciseOption.selected = true;
+            exerciseSelect.appendChild(noExerciseOption);
+            return;
+        }
+
+        const defaultOption = document.createElement('option');
+        defaultOption.textContent = 'Välj övning...';
+        defaultOption.disabled = true;
+        defaultOption.selected = true;
+        exerciseSelect.appendChild(defaultOption);
+
+        exercises.forEach(exercise => {
+            const option = document.createElement('option');
+            option.value = exercise.name;
+            option.textContent = exercise.name;
+            exerciseSelect.appendChild(option);
+
+            const listItem = document.createElement('li');
+            listItem.className = 'exercise-list-item';
+            listItem.innerHTML = `
+                <span>${exercise.name}</span>
+                <button class="btn btn-danger text-xs px-2 py-1 rounded-full delete-exercise-btn" data-id="${exercise.id}">Radera</button>
+            `;
+            exercisesList.appendChild(listItem);
+        });
+    }
+
+    // Återge alla träningspass
+    function renderAllData(workouts) {
+        workoutsList.innerHTML = '';
+        if (workouts.length === 0) {
+            workoutsList.innerHTML = '<p class="text-center text-gray-400">Inga pass sparade ännu.</p>';
+            return;
+        }
+
+        const groupedByWeek = workouts.reduce((acc, workout) => {
+            (acc[workout.week] = acc[workout.week] || []).push(workout);
+            return acc;
+        }, {});
+
+        Object.keys(groupedByWeek).sort((a, b) => b - a).forEach(week => {
+            const weekDiv = document.createElement('div');
+            weekDiv.className = 'bg-gray-800 p-4 rounded-lg mt-4';
+            weekDiv.innerHTML = `<h3 class="text-xl font-bold mb-2">Vecka ${week}</h3>`;
+
+            const exercisesByWorkout = groupedByWeek[week].reduce((acc, workout) => {
+                (acc[workout.exercise] = acc[workout.exercise] || []).push(workout);
+                return acc;
+            }, {});
+
+            Object.keys(exercisesByWorkout).forEach(exercise => {
+                const exerciseDiv = document.createElement('div');
+                exerciseDiv.className = 'bg-gray-700 p-3 rounded-lg mt-2';
+                exerciseDiv.innerHTML = `<h4 class="font-semibold text-lg text-purple-300">${exercise}</h4>`;
+                
+                exercisesByWorkout[exercise].forEach(workout => {
+                    const workoutItem = document.createElement('div');
+                    workoutItem.className = 'exercise-item flex justify-between items-center text-sm text-gray-300';
+                    workoutItem.innerHTML = `
+                        <span>Set: ${workout.sets}, Reps: ${workout.reps}, Vikt: ${workout.weight} kg</span>
+                        <button class="btn btn-danger text-xs px-2 py-1 rounded-full delete-workout-btn" data-id="${workout.id}">Radera</button>
+                    `;
+                    exerciseDiv.appendChild(workoutItem);
+                });
+                weekDiv.appendChild(exerciseDiv);
+            });
+            workoutsList.appendChild(weekDiv);
+        });
+    }
+
+    // Hanterare för händelser
+    async function saveWorkout() {
+      const exercise = exerciseSelect.value;
+      const week = parseInt(weekInput.value);
+      const sets = parseInt(setsInput.value);
+      const reps = parseInt(repsInput.value);
+      const weight = parseFloat(weightInput.value);
+
+      if (!exercise || isNaN(week) || isNaN(sets) || isNaN(reps) || isNaN(weight)) {
+        showMessageModal('Fyll i alla fält.', true);
+        return;
+      }
+      
+      saveWorkoutBtn.disabled = true;
+      try {
+        await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
+          exercise,
+          week,
+          sets,
+          reps,
+          weight,
+          timestamp: new Date().toISOString()
+        });
+        showMessageModal('Pass sparat!');
+        exerciseSelect.value = '';
+        weekInput.value = getWeekNumber(new Date());
+        setsInput.value = '';
+        repsInput.value = '';
+        weightInput.value = '';
+      } catch (e) {
+        console.error("Fel vid sparande av pass: ", e);
+        showMessageModal('Kunde inte spara pass.', true);
+      } finally {
+        saveWorkoutBtn.disabled = false;
+      }
+    }
+
+    async function addExercise() {
+      const exerciseName = newExerciseInput.value.trim();
+      if (exerciseName === '') {
+        showMessageModal('Ange ett namn för övningen.', true);
+        return;
+      }
+
+      addExerciseBtn.disabled = true;
+      try {
+        await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), {
+          name: exerciseName
+        });
+        showMessageModal('Övning tillagd!');
+        newExerciseInput.value = '';
+      } catch (e) {
+        console.error("Fel vid tillägg av övning: ", e);
+        showMessageModal('Kunde inte lägga till övning.', true);
+      } finally {
+        addExerciseBtn.disabled = false;
+      }
+    }
+
+    async function deleteExercise(id) {
+      if (!id) return;
+      try {
+        await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`, id));
+        showMessageModal('Övning raderad.');
+      } catch (e) {
+        console.error("Fel vid radering av övning: ", e);
+        showMessageModal('Kunde inte radera övning.', true);
+      }
+    }
+
+    async function deleteWorkout(id) {
+      if (!id) return;
+      try {
+        await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`, id));
+        showMessageModal('Pass raderat.');
+      } catch (e) {
+        console.error("Fel vid radering av pass: ", e);
+        showMessageModal('Kunde inte radera pass.', true);
+      }
+    }
+
+    function setupApp() {
       try {
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-        
-        const mainContent = document.getElementById('main-content');
-        const loginContainer = document.getElementById('login-container');
-        const anonymousSignInButton = document.getElementById('anonymous-sign-in-button');
-        const googleSignInButton = document.getElementById('google-sign-in-button');
-        const closeModalButton = document.getElementById('close-modal-button');
+        db = getFirestore(app);
+        auth = getAuth(app);
 
-        const exerciseSelect = document.getElementById('exercise-select');
-        const weekInput = document.getElementById('week-input');
-        const pastWeeksSelect = document.getElementById('past-weeks-select');
-        const setsInput = document.getElementById('sets-input');
-        const repsInput = document.getElementById('reps-input');
-        const weightInput = document.getElementById('weight-input');
-        const saveButton = document.getElementById('save-button');
-        const newExerciseInput = document.getElementById('new-exercise-input');
-        const addExerciseButton = document.getElementById('add-exercise-button');
-        const exerciseListDiv = document.getElementById('exercise-list');
-        const tableBody = document.getElementById('table-body');
-        const tableHead = document.getElementById('table-head');
-        const statusMessageDiv = document.getElementById('status-message');
-        const tableContainer = document.getElementById('table-container');
-        const dataListEmptyMessage = document.getElementById('data-list-empty-message');
-        const weightChart = document.getElementById('weight-chart');
-        const chartEmptyMessage = document.getElementById('chart-empty-message');
-        const manageExercisesDetails = document.getElementById('manage-exercises-details');
-        const currentUserIdDisplay = document.getElementById('current-user-id-display');
-        
-        let myChart = null;
-        let unsubscribeExercises = null;
-        let unsubscribeWorkouts = null;
-
-        const getWeekNumber = date => {
-          const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
-          const dayNum = d.getUTCDay() || 7;
-          d.setUTCDate(d.getUTCDate() + 4 - dayNum);
-          const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
-          return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
-        };
-
-        const renderExercises = exercises => {
-          exerciseSelect.innerHTML = '';
-          exerciseListDiv.innerHTML = '';
-          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
-          if (exercises.length === 0) {
-            defaultExercises.forEach(async name => {
-              try {
-                await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name });
-              } catch (e) {
-                console.error("Fel vid tillägg av standardövning:", e);
-              }
-            });
-          }
-          exercises.sort((a, b) => a.name.localeCompare(b.name));
-          exercises.forEach(ex => {
-            const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
-            exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
-            exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
-          });
-        };
-
-        const renderAllData = data => {
-          renderWorkoutData(data);
-          renderChart(data);
-        };
-
-        const renderWorkoutData = data => {
-          const uniqueWeeks = [...new Set(data.map(item => item.week))].sort((a, b) => b - a);
-          populateWeekDropdown(uniqueWeeks);
-          const selectedWeek = pastWeeksSelect.value;
-          const selectedWeekInt = parseInt(selectedWeek);
-          if (uniqueWeeks.includes(selectedWeekInt)) {
-            renderTable(data, selectedWeek);
-          } else {
-            if (uniqueWeeks.length > 0) {
-              const latestWeek = uniqueWeeks[0];
-              pastWeeksSelect.value = latestWeek;
-              renderTable(data, latestWeek);
-            } else {
-              renderTable(data, null);
-            }
-          }
-        };
-
-        const renderChart = data => {
-          chartEmptyMessage.classList.toggle('hidden', data.length > 0);
-          if (myChart) myChart.destroy();
-          if (data.length === 0) return;
-          const grouped = data.reduce((acc, entry) => {
-            (acc[entry.week] = acc[entry.week] || {})[entry.exercise] = (acc[entry.week][entry.exercise] || []).concat(entry);
-            return acc;
-          }, {});
-          const weeks = Object.keys(grouped).sort((a, b) => a - b);
-          const exercises = [...new Set(data.map(item => item.exercise))].sort();
-          const datasets = exercises.map(ex => {
-            const displayedName = ex.length > 14 ? ex.substring(0, 14) + '...' : ex;
-            return {
-              label: displayedName,
-              data: weeks.map(w => {
-                const latestEntry = grouped[w][ex] ? grouped[w][ex].reduce((a, b) => (a.timestamp > b.timestamp) ? a : b) : null;
-                return latestEntry ? latestEntry.weight : null;
-              }),
-              borderColor: `#${Math.floor(Math.random() * 16777215).toString(16).padStart(6, '0')}`,
-              tension: .1,
-              fill: false,
-              spanGaps: true
-            };
-          });
-          myChart = new Chart(weightChart, {
-            type: 'line',
-            data: {
-              labels: weeks.map(w => `Vecka ${w}`),
-              datasets
-            },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  labels: {
-                    color: '#e0e0e0'
-                  }
-                }
-              },
-              scales: {
-                x: {
-                  ticks: {
-                    color: '#e0e0e0'
-                  },
-                  grid: {
-                    color: 'rgba(255, 255, 255, 0.1)'
-                  },
-                  title: {
-                    display: true,
-                    text: 'Vecka',
-                    color: '#e0e0e0'
-                  }
-                },
-                y: {
-                  ticks: {
-                    color: '#e0e0e0'
-                  },
-                  grid: {
-                    color: 'rgba(255, 255, 255, 0.1)'
-                  },
-                  title: {
-                    display: true,
-                    text: 'Vikt (kg)',
-                    color: '#e0e0e0'
-                  }
-                }
-              }
-            }
-          });
-        };
-
-        const populateWeekDropdown = weeks => {
-          const currentVal = pastWeeksSelect.value;
-          pastWeeksSelect.innerHTML = '';
-          weeks.forEach(week => pastWeeksSelect.innerHTML += `<option value="${week}">Vecka ${week}</option>`);
-          if (weeks.length > 0) {
-            if (weeks.includes(parseInt(currentVal))) {
-              pastWeeksSelect.value = currentVal;
-            } else {
-              pastWeeksSelect.value = weeks[0];
-            }
-          } else {
-            pastWeeksSelect.innerHTML = '<option value="">Inga veckor</option>';
-          }
-        };
-
-        const renderTable = (data, selectedWeek) => {
-          tableHead.innerHTML = '<tr><th>Övning</th><th>Sets</th><th>Reps</th><th>Vikt (kg)</th><th></th></tr>';
-          tableBody.innerHTML = '';
-          const filtered = selectedWeek ? data.filter(item => item.week === parseInt(selectedWeek)) : [];
-          dataListEmptyMessage.style.display = filtered.length > 0 ? 'none' : 'block';
-          if (filtered.length === 0) {
-            tableContainer.style.display = 'none';
-          } else {
-            tableContainer.style.display = 'block';
-            filtered.sort((a, b) => b.timestamp - a.timestamp).forEach(item => {
-              const row = document.createElement('tr');
-              row.innerHTML = `
-                <td>${item.exercise}</td>
-                <td>${item.sets}</td>
-                <td>${item.reps}</td>
-                <td>${item.weight}</td>
-                <td><button data-id="${item.id}" class="delete-entry-button">X</button></td>
-              `;
-              tableBody.appendChild(row);
-            });
-          }
-        };
-
-        const showStatusMessage = (message, isError = false) => {
-          statusMessageDiv.textContent = message;
-          statusMessageDiv.className = isError ? 'status-message error' : 'status-message success';
-          setTimeout(() => statusMessageDiv.textContent = '', 3000);
-        };
-
-        const closeManageExercises = () => {
-          if (manageExercisesDetails.open) {
-            manageExercisesDetails.open = false;
-          }
-        };
-
-        // --- Event Listeners ---
-        anonymousSignInButton.addEventListener('click', async () => {
-          showModal('loading-modal');
-          try {
-            await signInAnonymously(auth);
-            hideModal('loading-modal');
-          } catch (e) {
-            hideModal('loading-modal');
-            showMessageModal('Inloggning misslyckades', 'Kunde inte logga in anonymt. Försök igen.');
-            console.error("Anonym inloggning misslyckades:", e);
-          }
-        });
-
-        googleSignInButton.addEventListener('click', async () => {
-          showModal('loading-modal');
-          try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
-            hideModal('loading-modal');
-          } catch (e) {
-            hideModal('loading-modal');
-            showMessageModal('Inloggning misslyckades', 'Kunde inte logga in med Google. Försök igen.');
-            console.error("Google inloggning misslyckades:", e);
-          }
-        });
-        
-        closeModalButton.addEventListener('click', () => {
-          hideModal('output-modal');
-        });
-
-        saveButton.addEventListener('click', async () => {
-          const exercise = exerciseSelect.value;
-          const week = parseInt(weekInput.value);
-          const sets = parseInt(setsInput.value);
-          const reps = parseInt(repsInput.value);
-          const weight = parseFloat(weightInput.value);
-          const timestamp = Date.now();
-
-          if (!exercise || isNaN(week) || isNaN(sets) || isNaN(reps) || isNaN(weight) || weight <= 0) {
-            showStatusMessage('Fyll i alla fält korrekt.', true);
-            return;
-          }
-
-          try {
-            await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`), {
-              exercise, week, sets, reps, weight, timestamp
-            });
-            showStatusMessage('Sparat!');
-          } catch (e) {
-            showStatusMessage('Kunde inte spara data.', true);
-            console.error("Fel vid tillägg av träningsdata:", e);
-          }
-        });
-
-        addExerciseButton.addEventListener('click', async () => {
-          const newExerciseName = newExerciseInput.value.trim();
-          if (newExerciseName === '') {
-            showStatusMessage('Skriv in ett namn på övningen.', true);
-            return;
-          }
-          try {
-            const exercisesRef = collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`);
-            const q = query(exercisesRef, where("name", "==", newExerciseName));
-            const querySnapshot = await getDocs(q);
-            if (!querySnapshot.empty) {
-              showMessageModal('Redan tillagd', 'Denna övning finns redan.');
-              return;
-            }
-            await addDoc(exercisesRef, { name: newExerciseName });
-            newExerciseInput.value = '';
-            showStatusMessage('Övning tillagd!');
-          } catch (e) {
-            showStatusMessage('Kunde inte lägga till övning.', true);
-            console.error("Fel vid tillägg av övning:", e);
-          }
-        });
-
-        exerciseListDiv.addEventListener('click', async (event) => {
-          if (event.target.classList.contains('exercise-tag-remove')) {
-            const docId = event.target.dataset.id;
+        // Skapa eventlyssnare för inloggning
+        loginBtn.addEventListener('click', async () => {
             try {
-              await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`, docId));
-              showStatusMessage('Övning borttagen.');
-            } catch (e) {
-              showStatusMessage('Kunde inte ta bort övning.', true);
-              console.error("Fel vid borttagning av övning:", e);
+                if (initialAuthToken) {
+                    await signInWithCustomToken(auth, initialAuthToken);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (error) {
+                console.error("Autentiseringsfel:", error);
+                showMessageModal('Kunde inte logga in. Prova igen senare.', true);
             }
-          }
         });
-
-        tableBody.addEventListener('click', async (event) => {
-          if (event.target.classList.contains('delete-entry-button')) {
-            const docId = event.target.dataset.id;
-            try {
-              await deleteDoc(doc(db, `artifacts/${appId}/users/${auth.currentUser.uid}/workouts`, docId));
-              showStatusMessage('Inmatning borttagen.');
-            } catch (e) {
-              showStatusMessage('Kunde inte ta bort inmatning.', true);
-              console.error("Fel vid borttagning av inmatning:", e);
-            }
-          }
-        });
-
-        pastWeeksSelect.addEventListener('change', () => {
-          renderTable(workoutData, pastWeeksSelect.value);
-        });
-
-        const initializeAppLogic = (db, userId, firebaseConfig) => {
-          loginContainer.classList.add('hidden');
+        
+        // Sätt upp eventlyssnare för knappar efter att användaren är autentiserad
+        const initializeAppLogic = (userId) => {
           mainContent.classList.remove('hidden');
+          loginContainer.classList.add('hidden');
           currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
 
-          weekInput.value = getWeekNumber(new Date());
+          // Koppla knappar till funktioner
+          saveWorkoutBtn.addEventListener('click', saveWorkout);
+          addExerciseBtn.addEventListener('click', addExercise);
+          toggleManageExercisesBtn.addEventListener('click', toggleManageExercises);
+          
+          // Lägg till globala eventlyssnare för delete-knappar
+          exercisesList.addEventListener('click', event => {
+              if (event.target.classList.contains('delete-exercise-btn')) {
+                  const id = event.target.dataset.id;
+                  deleteExercise(id);
+              }
+          });
 
+          workoutsList.addEventListener('click', event => {
+              if (event.target.classList.contains('delete-workout-btn')) {
+                  const id = event.target.dataset.id;
+                  deleteWorkout(id);
+              }
+          });
+
+          // Firestore-lyssnare
           if (unsubscribeExercises) unsubscribeExercises();
           if (unsubscribeWorkouts) unsubscribeWorkouts();
 
@@ -956,32 +479,23 @@
             workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             renderAllData(workoutData);
           });
-
-          const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
-          workoutInputFields.forEach(field => {
-            field.addEventListener('change', closeManageExercises);
-            field.addEventListener('input', closeManageExercises);
-          });
         };
         
-        onAuthStateChanged(auth, async (user) => {
-          if (user) {
-            const userId = user.uid;
-            loginContainer.classList.add('hidden');
-            mainContent.classList.remove('hidden');
-            initializeAppLogic(db, userId, firebaseConfig);
-          } else {
-            loginContainer.classList.remove('hidden');
-            mainContent.classList.add('hidden');
-            currentUserIdDisplay.textContent = ``;
-          }
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                const userId = user.uid;
+                initializeAppLogic(userId);
+            } else {
+                loginContainer.classList.remove('hidden');
+                mainContent.classList.add('hidden');
+                currentUserIdDisplay.textContent = ``;
+            }
         });
 
       } catch (e) {
         console.error("Initialization failed:", e);
-        showMessageModal('Fel', 'Kunde inte starta appen. Kontrollera konsolen för detaljer.');
       }
-    };
+    }
 
     window.onload = setupApp;
   </script>
