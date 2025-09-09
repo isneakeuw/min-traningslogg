@@ -427,6 +427,8 @@
         if (typeof __initial_auth_token !== 'undefined') {
             await signInWithCustomToken(auth, __initial_auth_token);
         } else {
+            // Detta är en fallback för lokala tester. Appen kan initialiseras men
+            // kan inte ansluta till databasen utan en giltig token.
             await signInAnonymously(auth);
         }
       
@@ -783,11 +785,22 @@
                 const userId = user.uid;
                 currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
                 initializeAppLogic(db, userId, firebaseConfig);
+            } else {
+                 console.log("Ingen användare inloggad. Logga in för att komma åt databasfunktioner.");
+                 currentUserIdDisplay.textContent = "Logga in för att använda appen.";
+                 document.getElementById('main-content').innerHTML = `
+                    <div style="text-align: center; padding: 2rem;">
+                        <p style="color: var(--text-color);">
+                            Den här appen kräver inloggning. Vänligen uppdatera sidan för att logga in automatiskt.
+                        </p>
+                    </div>
+                 `;
             }
         });
 
       } catch (e) {
         console.error("Initialization failed:", e);
+        showStatusMessage("Appen kunde inte starta korrekt. Vänligen uppdatera sidan.", 'error');
       }
     };
 
