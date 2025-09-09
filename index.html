@@ -1,32 +1,38 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="sv">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Träningslogg</title>
+  <title>Greve Draculas Träningslogg</title>
   <style>
     :root {
-      --bg-color: #212121;
-      --container-bg-color: #2e2e2e;
-      --card-bg-color: #333;
+      --bg-color: #2a1443; /* Mörkare lila bakgrund */
+      --container-bg-color: #3f225e; /* Mellanlila */
+      --card-bg-color: #1c1c1c; /* Mörkgrå för kort */
       --text-color: #e0e0e0;
-      --header-color: #d1e2f8;
+      --header-color: #a879e6; /* Neon lila */
       --accent-color: #5cb85c;
       --accent-hover-color: #4a904a;
       --danger-color: #ef4444;
-      --border-color: #333;
+      --border-color: #444;
+      --input-bg-color: #222;
+      --button-bg-color: #3d3d3d;
+      --button-hover-color: #4c4c4c;
+      --neon-lila: #a879e6;
+      --neon-lila-hover: #966ed9;
     }
 
     body {
       font-family: 'Roboto', sans-serif;
-      background-color: var(--bg-color);
       color: var(--text-color);
-      background-image: url("data:image/svg+xml,%3Csvg width='6' height='6' viewBox='0 0 6 6' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23333333' fill-opacity='0.4' fill-rule='evenodd'%3E%3Cpath d='M5 0h1L0 6V5zm1 5v1H5z'/%3E%3C/g%3E%3C/svg%3E");
+      /* Uppdaterad bakgrund med gradient för en coolare effekt */
+      background: linear-gradient(135deg, #1f0c2f 0%, #2a1443 50%, #1f0c2f 100%);
       padding: 1rem;
       display: flex;
       flex-direction: column;
       align-items: center;
       min-height: 100vh;
+      overflow-x: hidden;
     }
 
     @media (min-width: 640px) {
@@ -40,7 +46,8 @@
       max-width: 32rem;
       background-color: var(--container-bg-color);
       border-radius: 1rem;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+      /* Förbättrad skugga */
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
       padding: 1.5rem;
     }
 
@@ -60,6 +67,8 @@
       font-weight: 700;
       color: var(--header-color);
       margin-bottom: .25rem;
+      /* Glödande effekt på texten */
+      text-shadow: 0 0 10px var(--neon-lila);
     }
 
     @media (min-width: 640px) {
@@ -74,15 +83,25 @@
       border-radius: .75rem;
       margin-bottom: 1.5rem;
       box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      border: 1px solid var(--border-color);
     }
 
     .card h3 {
       font-size: 1.125rem;
       font-weight: 600;
       margin-bottom: 1rem;
-      color: var(--header-color);
+      color: var(--neon-lila);
       text-align: center;
     }
+    
+    .card h4 {
+      font-size: 1rem;
+      font-weight: 600;
+      margin-bottom: 0.5rem;
+      color: var(--text-color);
+      text-align: center;
+    }
+
 
     .input-group {
       display: flex;
@@ -119,7 +138,7 @@
     }
 
     .input-field {
-      background-color: var(--bg-color);
+      background-color: var(--input-bg-color);
       color: white;
       padding: .75rem;
       border-radius: .5rem;
@@ -128,7 +147,7 @@
       border: 2px solid transparent;
       box-sizing: border-box;
       text-align: center;
-      font-size: 16px; /* Förhindrar automatisk zoom på mobiler */
+      font-size: 16px;
     }
 
     #exercise-select,
@@ -137,7 +156,7 @@
     }
 
     .input-field:focus {
-      border-color: var(--accent-color);
+      border-color: var(--neon-lila);
     }
 
     button {
@@ -152,6 +171,14 @@
 
     .button-primary {
       background-color: var(--accent-color);
+    }
+    
+    .button-gemini {
+        background-color: var(--neon-lila);
+    }
+    
+    .button-gemini:hover {
+        background-color: var(--neon-lila-hover);
     }
 
     .button-primary:hover {
@@ -202,7 +229,7 @@
     .exercise-tag {
       display: inline-flex;
       align-items: center;
-      background-color: var(--bg-color);
+      background-color: var(--input-bg-color);
       color: var(--text-color);
       padding: .25rem .75rem;
       border-radius: 9999px;
@@ -255,7 +282,7 @@
 
     .styled-table thead th {
       background-color: var(--card-bg-color);
-      color: var(--header-color);
+      color: var(--neon-lila);
       font-weight: 700;
     }
 
@@ -268,7 +295,7 @@
     }
 
     .styled-table tbody tr:hover {
-      background-color: rgba(51, 51, 51, 0.5);
+      background-color: rgba(62, 62, 62, 0.5);
     }
 
     input[type="number"]::-webkit-inner-spin-button,
@@ -320,7 +347,7 @@
     }
     
     .auth-button {
-      background-color: #4285F4;
+      background-color: var(--button-bg-color);
       color: white;
       padding: .75rem 1rem;
       border-radius: .5rem;
@@ -330,11 +357,29 @@
       transition: background-color 0.3s;
       display: flex;
       align-items: center;
+      justify-content: center;
       gap: .5rem;
     }
-
+    
     .auth-button:hover {
-      background-color: #357ae8;
+        background-color: var(--button-hover-color);
+    }
+
+    #login-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .dracula-image {
+      width: 150px;
+      height: 150px; /* Ändrad till 150px för att matcha bredden */
+      object-fit: cover; /* Lägg till object-fit för att behålla proportionerna */
+      margin-bottom: 20px;
+      border-radius: 50%;
+      border: 3px solid var(--neon-lila);
+      /* Förstärkt glödande skugga */
+      box-shadow: 0 0 20px var(--neon-lila);
     }
 
     /* Modal styles */
@@ -365,7 +410,7 @@
 
     .modal-content h4 {
         margin-top: 0;
-        color: var(--header-color);
+        color: var(--neon-lila);
         font-size: 1.25rem;
         margin-bottom: 1rem;
     }
@@ -379,15 +424,85 @@
         justify-content: center;
         gap: 1rem;
     }
+    
+    .loading-spinner {
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        border-top: 4px solid #fff;
+        border-radius: 50%;
+        width: 24px;
+        height: 24px;
+        animation: spin 1s linear infinite;
+        margin: auto;
+    }
+    
+    @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+    }
+    
+    .llm-output {
+        white-space: pre-wrap;
+        text-align: left;
+        font-size: 1rem;
+        line-height: 1.5;
+        background-color: #2a2a2a;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-top: 1rem;
+        max-height: 400px;
+        overflow-y: auto;
+    }
+    
+    .audio-player-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        margin-top: 1rem;
+    }
+    
+    #audio-player {
+        width: 100%;
+    }
+    
+    .gemini-section {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-top: 1rem;
+    }
   </style>
 </head>
 
 <body>
   <div id="app-container">
     <header id="app-header">
-      <h1>Träningslogg</h1>
+      <h1>Greve Draculas Träningslogg</h1>
     </header>
-    <div id="main-content">
+    
+    <!-- Login Section -->
+    <div id="login-container" class="card flex flex-col items-center justify-center text-center">
+      <img src="greve_dracula.jpg" alt="Greve Dracula" class="dracula-image">
+      <h3 class="mb-4">Logga in för att spara din data</h3>
+      <div class="space-y-4 w-full">
+        <button id="google-sign-in-button" class="auth-button w-full">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
+            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.636,4.524-5.694,7.766-10.437,7.766c-6.4,0-11.608-5.208-11.608-11.608 c0-6.4,5.208-11.608,11.608-11.608c3.41,0,6.505,1.442,8.681,3.771l5.448-5.448C36.65,6.517,31.296,4,24,4 C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20L43.611,20.083z"/>
+            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,19.986,12,24,12c5.056,0,9.458,2.783,11.838,6.864 l5.448-5.448C36.65,6.517,31.296,4,24,4C16.318,4,9.656,7.243,6.306,14.691z"/>
+            <path fill="#4CAF50" d="M24,44c5.166,0,9.986-1.979,13.623-5.597l-5.448-5.448c-2.029,2.964-5.267,4.787-8.175,4.787 c-5.06,0-9.35-3.093-11.396-7.536l-6.57,4.819C9.656,40.757,16.318,44,24,44z"/>
+            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.14-4.137,5.578v0.001l5.448,5.448 C41.655,36.57,44,30.857,44,24C44,22.61,43.893,21.328,43.611,20.083z"/>
+          </svg>
+          Logga in med Google
+        </button>
+        <p class="text-xs text-gray-500 mt-2">eller</p>
+        <button id="anonymous-sign-in-button" class="auth-button w-full">
+          Logga in utan konto
+        </button>
+      </div>
+    </div>
+    
+    <!-- Main App Content (hidden by default) -->
+    <div id="main-content" class="hidden">
+      
       <div class="card">
         <h3>Ny inmatning</h3>
         <div class="input-group">
@@ -449,54 +564,52 @@
       </div>
     </div>
     <div id="auth-container">
-      <div id="auth-ui">
-        <button id="google-sign-in-button" class="auth-button">
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="24px" height="24px">
-            <path fill="#FFC107" d="M43.611,20.083H42V20H24v8h11.303c-1.636,4.524-5.694,7.766-10.437,7.766c-6.4,0-11.608-5.208-11.608-11.608 c0-6.4,5.208-11.608,11.608-11.608c3.41,0,6.505,1.442,8.681,3.771l5.448-5.448C36.65,6.517,31.296,4,24,4 C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20L43.611,20.083z"/>
-            <path fill="#FF3D00" d="M6.306,14.691l6.571,4.819C14.655,15.108,19.986,12,24,12c5.056,0,9.458,2.783,11.838,6.864 l5.448-5.448C36.65,6.517,31.296,4,24,4C16.318,4,9.656,7.243,6.306,14.691z"/>
-            <path fill="#4CAF50" d="M24,44c5.166,0,9.986-1.979,13.623-5.597l-5.448-5.448c-2.029,2.964-5.267,4.787-8.175,4.787 c-5.06,0-9.35-3.093-11.396-7.536l-6.57,4.819C9.656,40.757,16.318,44,24,44z"/>
-            <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.14-4.137,5.578v0.001l5.448,5.448 C41.655,36.57,44,30.857,44,24C44,22.61,43.893,21.328,43.611,20.083z"/>
-          </svg>
-          Logga in med Google
-        </button>
-        <button id="sign-out-button" class="button-primary hidden">Logga ut</button>
-      </div>
       <p id="current-user-id-display"></p>
     </div>
   </div>
-  
-  <div id="modal" class="modal">
+  <!-- Modals -->
+  <div id="loading-modal" class="modal">
     <div class="modal-content">
-      <h4>Vill du lägga till standardövningar?</h4>
-      <p>Vill du lägga till de sex vanligaste basövningarna: Bänkpress, Chins, Knäböj, Marklyft, Militärpress och Skivstångsrodd?</p>
-      <div class="modal-buttons">
-        <button id="modal-yes-button" class="button-primary">Ja</button>
-        <button id="modal-no-button" class="button-primary" style="background-color: var(--danger-color);">Nej</button>
-      </div>
+      <div class="loading-spinner"></div>
+      <p style="margin-top:1rem; margin-bottom:0.5rem; color:var(--text-color);">Arbetar hårt i kryptan...</p>
+    </div>
+  </div>
+
+  <div id="output-modal" class="modal">
+    <div class="modal-content">
+      <h4 id="output-modal-title"></h4>
+      <div id="output-modal-content"></div>
+      <button id="close-modal-button" class="button-gemini" style="width:100%;">Stäng</button>
     </div>
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
     import { getFirestore, collection, onSnapshot, addDoc, doc, deleteDoc, query, where, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
     import { setLogLevel } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+    const showModal = (modalId) => {
+        document.getElementById(modalId).style.display = "block";
+    };
+
+    const hideModal = (modalId) => {
+        document.getElementById(modalId).style.display = "none";
+    };
 
     const setupApp = async () => {
       setLogLevel('debug');
       let workoutData = [];
-      let exercisesExist = false;
 
       const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-      const firebaseConfig = {
-        apiKey: "AIzaSyCKjXS1TxfEcfd-nDr0jI0galrjXsz7HgM",
-        authDomain: "traningslogg-a271a.firebaseapp.com",
-        projectId: "traningslogg-a271a",
-        storageBucket: "traningslogg-a271a.firebasestorage.app",
-        messagingSenderId: "949604620134",
-        appId: "1:949604620134:web:424835eafca2dc0a66daa7",
-        measurementId: "G-Q9MRXSQ6JB"
+      const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+        apiKey: "YOUR_API_KEY",
+        authDomain: "YOUR_AUTH_DOMAIN",
+        projectId: "YOUR_PROJECT_ID",
+        storageBucket: "YOUR_STORAGE_BUCKET",
+        messagingSenderId: "YOUR_MESSAGING_SENDER_ID",
+        appId: "YOUR_APP_ID",
       };
 
       try {
@@ -504,6 +617,11 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
         
+        const mainContent = document.getElementById('main-content');
+        const loginContainer = document.getElementById('login-container');
+        const anonymousSignInButton = document.getElementById('anonymous-sign-in-button');
+        const googleSignInButton = document.getElementById('google-sign-in-button');
+
         const exerciseSelect = document.getElementById('exercise-select');
         const weekInput = document.getElementById('week-input');
         const pastWeeksSelect = document.getElementById('past-weeks-select');
@@ -523,15 +641,11 @@
         const chartEmptyMessage = document.getElementById('chart-empty-message');
         const manageExercisesDetails = document.getElementById('manage-exercises-details');
         const currentUserIdDisplay = document.getElementById('current-user-id-display');
-        const modal = document.getElementById('modal');
-        const modalYesButton = document.getElementById('modal-yes-button');
-        const modalNoButton = document.getElementById('modal-no-button');
-        const googleSignInButton = document.getElementById('google-sign-in-button');
-        const signOutButton = document.getElementById('sign-out-button');
-        const mainContent = document.getElementById('main-content');
-
+        const closeModalButton = document.getElementById('close-modal-button');
+        
         let myChart = null;
-        let isGoogleSignInHandled = false;
+        let unsubscribeExercises = null;
+        let unsubscribeWorkouts = null;
 
         const getWeekNumber = date => {
           const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()));
@@ -541,32 +655,25 @@
           return Math.ceil((((d - yearStart) / 86400000) + 1) / 7);
         };
 
-        const renderExercises = (exercises) => {
-            exerciseSelect.innerHTML = '';
-            exerciseListDiv.innerHTML = '';
-            exercisesExist = exercises.length > 0;
-
-            exercises.sort((a, b) => a.name.localeCompare(b.name));
-            exercises.forEach(ex => {
-                const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
-                exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
-                exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
+        const renderExercises = exercises => {
+          exerciseSelect.innerHTML = '';
+          exerciseListDiv.innerHTML = '';
+          const defaultExercises = ["Knäböj", "Bänkpress", "Marklyft", "Militärpress", "Skivstångsrodd", "Chins"];
+          if (exercises.length === 0) {
+            defaultExercises.forEach(async name => {
+              try {
+                await addDoc(collection(db, `artifacts/${appId}/users/${auth.currentUser.uid}/exercises`), { name });
+              } catch (e) {
+                console.error("Fel vid tillägg av standardövning:", e);
+              }
             });
-        };
-
-        const addDefaultExercises = async (userId, config) => {
-          const defaultExercises = ["Bänkpress", "Chins", "Knäböj", "Marklyft", "Militärpress", "Skivstångsrodd"];
-          try {
-            const addPromises = defaultExercises.map(name =>
-              addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name })
-            );
-            await Promise.all(addPromises);
-            modal.style.display = 'none';
-            showStatusMessage("Standardövningar tillagda!", "success");
-          } catch (e) {
-            console.error("Fel vid tillägg av standardövningar:", e);
-            showStatusMessage("Kunde inte lägga till standardövningar. Försök igen.", "error");
           }
+          exercises.sort((a, b) => a.name.localeCompare(b.name));
+          exercises.forEach(ex => {
+            const displayedName = ex.name.length > 14 ? ex.name.substring(0, 14) + '...' : ex.name;
+            exerciseSelect.innerHTML += `<option value="${ex.name}">${displayedName}</option>`;
+            exerciseListDiv.innerHTML += `<div class="exercise-tag"><span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${displayedName}</span><button data-id="${ex.id}" class="exercise-tag-remove">X</button></div>`;
+          });
         };
 
         const renderAllData = data => {
@@ -733,205 +840,185 @@
             manageExercisesDetails.open = false;
           }
         };
-        
-        const closeModals = () => {
-            modal.style.display = 'none';
-        }
 
         // Här sätts all app-logik upp efter att en användare har loggats in
         const initializeAppLogic = (db, userId, config) => {
-          // Eventlyssnare för "Spara"
-          saveButton.addEventListener('click', async () => {
-            const exercise = exerciseSelect.value;
-            const week = parseInt(weekInput.value);
-            const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
-            const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
-            const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
-            const timestamp = Date.now();
+            // Unsubscribe from previous listeners
+            if (unsubscribeExercises) unsubscribeExercises();
+            if (unsubscribeWorkouts) unsubscribeWorkouts();
 
-            if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
-              showStatusMessage("Fyll i alla fält korrekt.", 'error');
-              return;
-            }
+            // Spara
+            saveButton.addEventListener('click', async () => {
+                const exercise = exerciseSelect.value;
+                const week = parseInt(weekInput.value);
+                const weight = parseFloat(weightInput.value.trim().replace(',', '.'));
+                const sets = setsInput.value.trim() ? parseInt(setsInput.value) : null;
+                const reps = repsInput.value.trim() ? parseInt(repsInput.value) : null;
+                const timestamp = Date.now();
 
-            try {
-              await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), {
-                exercise,
-                week,
-                sets,
-                reps,
-                weight,
-                timestamp
-              });
-              showStatusMessage("Data sparad!", 'success');
-              [setsInput, repsInput, weightInput].forEach(i => i.value = '');
-            } catch (e) {
-              console.error("Fel vid spara data:", e);
-              showStatusMessage("Kunde inte spara data. Försök igen.", "error");
-            }
-          });
+                if (!exercise || isNaN(week) || week <= 0 || isNaN(weight) || weight <= 0) {
+                    showStatusMessage("Fyll i alla fält korrekt.", 'error');
+                    return;
+                }
 
-          // Eventlyssnare för "Lägg till"
-          addExerciseButton.addEventListener('click', async () => {
-            const newExerciseName = newExerciseInput.value.trim();
-            if (!newExerciseName) {
-              showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
-              return;
-            }
+                try {
+                    await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), {
+                        exercise,
+                        week,
+                        sets,
+                        reps,
+                        weight,
+                        timestamp
+                    });
+                    showStatusMessage("Data sparad!", 'success');
+                    [setsInput, repsInput, weightInput].forEach(i => i.value = '');
+                } catch (e) {
+                    console.error("Fel vid spara data:", e);
+                    showStatusMessage("Kunde inte spara data. Försök igen.", 'error');
+                }
+            });
 
-            try {
-              const q = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), where("name", "==", newExerciseName));
-              const querySnapshot = await getDocs(q);
-              if (!querySnapshot.empty) {
-                showStatusMessage("Denna övning finns redan.", 'error');
-                return;
-              }
+            // Lägg till övning
+            addExerciseButton.addEventListener('click', async () => {
+                const newExerciseName = newExerciseInput.value.trim();
+                if (!newExerciseName) {
+                    showStatusMessage("Övningsnamnet kan inte vara tomt.", 'error');
+                    return;
+                }
 
-              await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name: newExerciseName });
-              newExerciseInput.value = '';
-              showStatusMessage("Övning tillagd!", 'success');
-            } catch (e) {
-              console.error("Fel vid tillägg av övning:", e);
-              showStatusMessage("Kunde inte lägga till övning. Försök igen.", "error");
-            }
-          });
+                try {
+                    const q = query(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), where("name", "==", newExerciseName));
+                    const querySnapshot = await getDocs(q);
+                    if (!querySnapshot.empty) {
+                        showStatusMessage("Denna övning finns redan.", 'error');
+                        return;
+                    }
 
-          // Eventdelegation för klick på dynamiska övningstaggar
-          exerciseListDiv.addEventListener('click', async e => {
-            if (e.target.classList.contains('exercise-tag-remove')) {
-              const docId = e.target.dataset.id;
-              try {
-                const exerciseDocRef = doc(db, `artifacts/${config.projectId}/users/${userId}/exercises`, docId);
-                const exerciseDoc = await getDoc(exerciseDocRef);
-                const exerciseName = exerciseDoc.data().name;
+                    await addDoc(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), { name: newExerciseName });
+                    newExerciseInput.value = '';
+                    showStatusMessage("Övning tillagd!", 'success');
+                } catch (e) {
+                    console.error("Fel vid tillägg av övning:", e);
+                    showStatusMessage("Kunde inte lägga till övning. Försök igen.", 'error');
+                }
+            });
 
-                const workoutsQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), where("exercise", "==", exerciseName));
-                const workoutsSnapshot = await getDocs(workoutsQuery);
-                const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, workoutDoc.id)));
-                await Promise.all(deletePromises);
-                await deleteDoc(exerciseDocRef);
-                showStatusMessage("Övning och all associerad data borttagen!", "success");
-              } catch (e) {
-                console.error("Fel vid borttagning av övning och data:", e);
-                showStatusMessage("Kunde inte ta bort data. Försök igen.", "error");
-              }
-            }
-          });
+            // Ta bort övning
+            exerciseListDiv.addEventListener('click', async e => {
+                if (e.target.classList.contains('exercise-tag-remove')) {
+                    const docId = e.target.dataset.id;
+                    try {
+                        const exerciseDocRef = doc(db, `artifacts/${config.projectId}/users/${userId}/exercises`, docId);
+                        const exerciseDoc = await getDoc(exerciseDocRef);
+                        const exerciseName = exerciseDoc.data().name;
 
-          // Eventdelegation för klick på tabellrader
-          tableBody.addEventListener('click', async e => {
-            if (e.target.classList.contains('delete-entry-button')) {
-              const docId = e.target.dataset.id;
-              try {
-                await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, docId));
-                showStatusMessage("Inmatning borttagen!", "success");
-              } catch (e) {
-                console.error("Fel vid borttagning av inmatning:", e);
-                showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", "error");
-              }
-            }
-          });
-          
-          modalYesButton.addEventListener('click', () => {
-              addDefaultExercises(userId, config);
-          });
-          
-          modalNoButton.addEventListener('click', () => {
-              closeModals();
-          });
+                        const workoutsQuery = query(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), where("exercise", "==", exerciseName));
+                        const workoutsSnapshot = await getDocs(workoutsQuery);
+                        const deletePromises = workoutsSnapshot.docs.map(workoutDoc => deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, workoutDoc.id)));
+                        await Promise.all(deletePromises);
+                        await deleteDoc(exerciseDocRef);
+                        showStatusMessage("Övning och all associerad data borttagen!", 'success');
+                    } catch (e) {
+                        console.error("Fel vid borttagning av övning och data:", e);
+                        showStatusMessage("Kunde inte ta bort data. Försök igen.", 'error');
+                    }
+                }
+            });
 
-          pastWeeksSelect.addEventListener('change', () => {
-            renderWorkoutData(workoutData);
-          });
+            // Ta bort inmatning
+            tableBody.addEventListener('click', async e => {
+                if (e.target.classList.contains('delete-entry-button')) {
+                    const docId = e.target.dataset.id;
+                    try {
+                        await deleteDoc(doc(db, `artifacts/${config.projectId}/users/${userId}/workouts`, docId));
+                        showStatusMessage("Inmatning borttagen!", 'success');
+                    } catch (e) {
+                        console.error("Fel vid borttagning av inmatning:", e);
+                        showStatusMessage("Kunde inte ta bort inmatning. Försök igen.", 'error');
+                    }
+                }
+            });
 
-          weekInput.addEventListener('input', enforceMaxLength);
-          setsInput.addEventListener('input', enforceMaxLength);
-          repsInput.addEventListener('input', enforceMaxLength);
-          weightInput.addEventListener('input', enforceMaxLength);
-          weekInput.addEventListener('keydown', handleNumberInputKeydown);
-          setsInput.addEventListener('keydown', handleNumberInputKeydown);
-          repsInput.addEventListener('keydown', handleNumberInputKeydown);
-          weightInput.addEventListener('keydown', handleNumberInputKeydown);
+            // Övriga händelselyssnare
+            pastWeeksSelect.addEventListener('change', () => {
+                renderWorkoutData(workoutData);
+            });
 
-          const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
-          workoutInputFields.forEach(field => {
-            field.addEventListener('change', closeManageExercises);
-            field.addEventListener('input', closeManageExercises);
-          });
+            weekInput.addEventListener('input', enforceMaxLength);
+            setsInput.addEventListener('input', enforceMaxLength);
+            repsInput.addEventListener('input', enforceMaxLength);
+            weightInput.addEventListener('input', enforceMaxLength);
+            weekInput.addEventListener('keydown', handleNumberInputKeydown);
+            setsInput.addEventListener('keydown', handleNumberInputKeydown);
+            repsInput.addEventListener('keydown', handleNumberInputKeydown);
+            weightInput.addEventListener('keydown', handleNumberInputKeydown);
+            closeModalButton.addEventListener('click', () => hideModal('output-modal'));
 
-          document.addEventListener('click', event => {
-            if (!manageExercisesDetails.contains(event.target) && !modal.contains(event.target)) {
-              closeManageExercises();
-              closeModals();
-            }
-          });
-          
-          weekInput.value = getWeekNumber(new Date());
+            const workoutInputFields = [exerciseSelect, weekInput, setsInput, repsInput, weightInput];
+            workoutInputFields.forEach(field => {
+                field.addEventListener('change', closeManageExercises);
+                field.addEventListener('input', closeManageExercises);
+            });
 
-          onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
-            const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderExercises(exercises);
-          });
+            document.addEventListener('click', event => {
+                if (!manageExercisesDetails.contains(event.target)) {
+                    closeManageExercises();
+                }
+            });
+            
+            weekInput.value = getWeekNumber(new Date());
 
-          onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
-            workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            renderAllData(workoutData);
-          });
-          
-          manageExercisesDetails.addEventListener('toggle', () => {
-              if (manageExercisesDetails.open && !exercisesExist) {
-                  modal.style.display = 'block';
-              }
-          });
+            // Real-time listeners
+            unsubscribeExercises = onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/exercises`), snapshot => {
+                const exercises = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderExercises(exercises);
+            });
+
+            unsubscribeWorkouts = onSnapshot(collection(db, `artifacts/${config.projectId}/users/${userId}/workouts`), snapshot => {
+                workoutData = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+                renderAllData(workoutData);
+            });
         };
         
+        // Initial inloggning och UI-hantering
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                googleSignInButton.classList.add('hidden');
-                signOutButton.classList.remove('hidden');
+                const userId = user.uid;
+                currentUserIdDisplay.textContent = `Ditt användar-ID: ${userId}`;
+                loginContainer.classList.add('hidden');
                 mainContent.classList.remove('hidden');
-                currentUserIdDisplay.textContent = user.email ? `Inloggad som: ${user.email}` : `Ditt användar-ID: ${user.uid}`;
-                initializeAppLogic(db, user.uid, firebaseConfig);
+                initializeAppLogic(db, userId, firebaseConfig);
             } else {
-                googleSignInButton.classList.remove('hidden');
-                signOutButton.classList.add('hidden');
+                loginContainer.classList.remove('hidden');
                 mainContent.classList.add('hidden');
-                currentUserIdDisplay.textContent = 'Du är inte inloggad.';
-                if (typeof __initial_auth_token !== 'undefined' && !isGoogleSignInHandled) {
-                    signInWithCustomToken(auth, __initial_auth_token).catch(e => {
-                        console.error("Anonym inloggning misslyckades:", e);
-                        signInAnonymously(auth);
-                    });
-                } else if (!isGoogleSignInHandled) {
-                    signInAnonymously(auth);
+            }
+        });
+        
+        anonymousSignInButton.addEventListener('click', async () => {
+            try {
+                if (typeof __initial_auth_token !== 'undefined') {
+                     await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                     await signInAnonymously(auth);
                 }
+            } catch (e) {
+                console.error("Anonym inloggning misslyckades:", e);
+                alert("Anonym inloggning misslyckades. Vänligen försök igen.");
             }
         });
 
         googleSignInButton.addEventListener('click', async () => {
-          isGoogleSignInHandled = true;
-          const provider = new GoogleAuthProvider();
-          try {
-            await signInWithPopup(auth, provider);
-          } catch (error) {
-            console.error("Google-inloggning misslyckades:", error);
-            showStatusMessage("Google-inloggning misslyckades. Försök igen.", "error");
-          }
-        });
-
-        signOutButton.addEventListener('click', async () => {
-          try {
-            await signOut(auth);
-            showStatusMessage("Du är utloggad.", "success");
-            window.location.reload();
-          } catch (error) {
-            console.error("Utloggning misslyckades:", error);
-            showStatusMessage("Utloggning misslyckades.", "error");
-          }
+            const provider = new GoogleAuthProvider();
+            try {
+                await signInWithPopup(auth, provider);
+            } catch (error) {
+                console.error("Google-inloggning misslyckades:", error);
+                alert("Google-inloggning misslyckades. Vänligen försök igen.");
+            }
         });
 
       } catch (e) {
-        console.error("Initialisering misslyckades:", e);
+        console.error("Initiering misslyckades:", e);
       }
     };
 
